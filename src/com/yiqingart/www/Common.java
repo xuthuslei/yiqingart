@@ -84,6 +84,10 @@ public class Common {
     
     public static String getAccessToken(HttpSession session) {
 
+    	if(System.getProperty("baejavasdk.local").equalsIgnoreCase("true")){
+    		logger.log(Level.INFO, "is local");
+    		return "21.e96287eb48c8961a19cb0c985fb1c551.2592000.1396597390.1732080263-1514280";
+    	}
 		if (null != session) {
 			String access_token = (String) session.getAttribute("access_token");
 			if (access_token != null) {

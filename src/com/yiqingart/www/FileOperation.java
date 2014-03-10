@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +18,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.baidu.bae.api.memcache.BaeCache;
 import com.yiqingart.www.Acra.Method;
@@ -29,7 +36,7 @@ public class FileOperation extends HttpServlet {
 	private Logger logger = Logger.getLogger("FileOperation");
 
 	public enum Method {
-		GET_PIC, PUT_PIC, THUMBNAIL, NOVALUE;
+		THUMBNAIL, PIC, VIDEO, NOVALUE;
 		public static Method toMethod(String str) {
 			try {
 				return valueOf(str);
@@ -60,10 +67,15 @@ public class FileOperation extends HttpServlet {
 		//resp.setCharacterEncoding("utf-8");
 		Method m = Method.toMethod(method.toUpperCase());
 		switch (m) {
-		case GET_PIC:
-			get_pic( req, resp);
+		case PIC:
+			file_pic( req, resp);
 			break;
-		
+		case THUMBNAIL:
+			file_thumbail( req, resp);
+			break;	
+		case VIDEO:
+			file_video( req, resp);
+			break;
 		default:
 			PrintWriter pw = resp.getWriter();
 			pw.write("wrong");
@@ -79,22 +91,24 @@ public class FileOperation extends HttpServlet {
     }
  
 	@SuppressWarnings("unchecked")
-	private void get_pic(HttpServletRequest req, HttpServletResponse resp) {
+	private void file_pic(HttpServletRequest req, HttpServletResponse resp) {
 		try {
 			HttpSession session = req.getSession(true);// 如果没有该session，则自动创建一个新的
 			String access_token = Common.getAccessToken(session);
 			BaeCache baeCache = Common.getBaeCache();
 			List<byte[]> value =new ArrayList<byte[]>();
 			
-			String key = req.getQueryString();
-			
+			logger.log(Level.SEVERE, "path="+ req.getRequestURI());
+			String filename = req.getRequestURI().substring("/file/pic/".length());
+			logger.log(Level.SEVERE, "filename:"+filename);
+				
 			resp.setContentType("image/jpeg");
 			resp.setDateHeader("Expires",System.currentTimeMillis() + 24*3600 * 1000);
 			
 			OutputStream o = resp.getOutputStream();
 			
-			if (key.length() < 180) {
-				value = (List<byte[]>) baeCache.get(key);
+			if (filename.length() < 180) {
+				value = (List<byte[]>) baeCache.get(filename);
 				if (value != null) {
 					resp.addHeader("memchched", "true");
 					for (int i = 0; i < value.size(); i++) {
@@ -107,7 +121,7 @@ public class FileOperation extends HttpServlet {
 				}
 			}
 			
-			String url = "https://pcs.baidu.com/rest/2.0/pcs/thumbnail?access_token="+access_token + "&" +  req.getQueryString();
+			String url = "https://pcs.baidu.com/rest/2.0/pcs/thumbnail?access_token="+access_token + "&method=generate&path="+filename+"&quality=100&width=1600&height=1200";
 			
 			
 			URL connect = new URL(url.toString());
@@ -118,7 +132,7 @@ public class FileOperation extends HttpServlet {
 			
 			int nRead = 0;
 			while( (nRead=is.read(buf)) != -1 ) {
-				if(key.length()<180){
+				if(filename.length()<180){
 				    if( nRead == 1024 ){
 				    	value.add(buf.clone());
 				    }
@@ -128,8 +142,8 @@ public class FileOperation extends HttpServlet {
 				}
 			    o.write(buf, 0, nRead);
 			}
-			if(key.length()<180){
-				baeCache.add(key, value, 600000);
+			if(filename.length()<180){
+				baeCache.add(filename, value, 600000);
 			}
 			o.flush();
 			o.close();
@@ -139,4 +153,119 @@ public class FileOperation extends HttpServlet {
 			return ;
 		}
 	}
+	@SuppressWarnings("unchecked")
+	private void file_thumbail(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+			HttpSession session = req.getSession(true);// 如果没有该session，则自动创建一个新的
+			String access_token = Common.getAccessToken(session);
+			BaeCache baeCache = Common.getBaeCache();
+			List<byte[]> value =new ArrayList<byte[]>();
+			
+			String filename = req.getRequestURI().substring("/file/THUMBNAIL/".length());
+			logger.log(Level.INFO, "filename:"+filename);
+			
+			resp.setContentType("image/jpeg");
+			resp.setDateHeader("Expires",System.currentTimeMillis() + 24*3600 * 1000);
+			
+			OutputStream o = resp.getOutputStream();
+			
+			if (filename.length() < 180) {
+				value = (List<byte[]>) baeCache.get("thu_"+ filename);
+				if (value != null) {
+					resp.addHeader("memchched", "true");
+					for (int i = 0; i < value.size(); i++) {
+						byte data[] = value.get(i);
+						o.write(data, 0, data.length);
+					}
+					o.flush();
+					o.close();
+					return;
+				}
+			}
+			
+			String url = "https://pcs.baidu.com/rest/2.0/pcs/thumbnail?access_token="+access_token + "&method=generate&path="+filename+"&quality=100&width=320&height=240";
+			
+			
+			URL connect = new URL(url.toString());
+			URLConnection connection = connect.openConnection();
+			InputStream is = connection.getInputStream();
+			byte[] buf = new byte[1024]; // 32k buffer
+			value =new ArrayList<byte[]>();
+			
+			int nRead = 0;
+			while( (nRead=is.read(buf)) != -1 ) {
+				if(filename.length()<180){
+				    if( nRead == 1024 ){
+				    	value.add(buf.clone());
+				    }
+				    else {
+				    	value.add(subBytes(buf, 0 , nRead));
+				    }
+				}
+			    o.write(buf, 0, nRead);
+			}
+			if(filename.length()<180){
+				baeCache.add("thu_"+filename, value, 600000);
+			}
+			o.flush();
+			o.close();
+		} catch (Exception e) {
+			// 异常处理逻辑
+			logger.log(Level.SEVERE, "error:", e);
+			return ;
+		}
+	}
+	private void file_video(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		// 在解析请求之前先判断请求类型是否为文件上传类型
+		String method = req.getMethod();
+        String filename = req.getRequestURI().substring("/file/video/".length());
+		logger.log(Level.INFO, "filename:"+filename+" method:"+method);
+
+		if( method.equalsIgnoreCase("POST")){
+	        // 文件上传处理工厂
+	        FileItemFactory factory = new DiskFileItemFactory();
+	
+	        // 创建文件上传处理器
+	        ServletFileUpload upload = new ServletFileUpload(factory);
+	
+	        // 开始解析请求信息
+	        List items = null;
+	        try {
+	            items = upload.parseRequest(req);
+	        }
+	        catch (FileUploadException e) {
+	            e.printStackTrace();
+	        }
+	
+	        // 对所有请求信息进行判断
+	        Iterator iter = items.iterator();
+	        while (iter.hasNext()) {
+	            FileItem item = (FileItem) iter.next();
+	            // 信息为普通的格式
+	            if (item.isFormField()) {
+	                
+	            }
+	            // 信息为文件格式
+	            else {
+	            	BaeCache baeCache = Common.getBaeCache();
+	            	baeCache.add(filename, item, 600000);
+	            }
+	        }
+		}
+		else {
+			BaeCache baeCache = Common.getBaeCache();
+			FileItem item = (FileItem) baeCache.get(filename);
+			
+			if( item == null){
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			}
+			else {
+				OutputStream o = resp.getOutputStream();
+				o.write(item.get());
+				o.flush();
+				o.close();
+			}
+		}
+	}
+	
 }

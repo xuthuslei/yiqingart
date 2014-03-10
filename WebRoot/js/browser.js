@@ -21,7 +21,7 @@ function updateimg() {
 			if(	data.hasOwnProperty("path_id")){
 				$("#"+data.path_id).show();
 				$("#"+data.path_id).empty();
-				$("#"+data.path_id).append("<div class='close_box'>X</div><a onclick=\"_hmt.push(['_trackEvent', '" + param.room.split("/",4)[3] + "', '" + param.room.split("/",4)[3] + "/´óÍ¼'])\" target='_blank' href='/file/get_pic?method=generate&path="+urlencode(data.path)+"&quality=100&width=1600&height=1200'> <img src='/file/get_pic?method=generate&path="+urlencode(data.path)+"&quality=100&width=320&height=240' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+data.path.split("/",6)[5]+"</div>");
+				$("#"+data.path_id).append("<div class='close_box'>X</div><a onclick=\"_hmt.push(['_trackEvent', '" + param.room.split("/",4)[3] + "', '" + param.room.split("/",4)[3] + "/´óÍ¼'])\" target='_blank' href='/file/pic/"+urlencode(data.path)+"'> <img src='/file/thumbnail/"+urlencode(data.path)+"' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+data.path.split("/",6)[5]+"</div>");
 			}
 			else{
 				if(isFirst == 1){
@@ -113,7 +113,7 @@ $(document).ready(function(){
 			}
 			
 			for(var i=0;i<(pic_list.list.length<20?pic_list.list.length:20);i++){  
-				$("#pic").append("<div class='img'><a target='_blank' href='/file/get_pic?method=generate&path="+urlencode(pic_list.list[i])+"&quality=100&width=1600&height=1200'> <img src='/file/get_pic?method=generate&path="+urlencode(pic_list.list[i])+"&quality=100&width=160&height=120' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+				$("#pic").append("<div class='img'><a target='_blank' href='/file/pic/"+urlencode(pic_list.list[i])+"'> <img src='/file/thumbnail/"+urlencode(pic_list.list[i])+"' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 			}  
 		});
 	});
@@ -122,7 +122,7 @@ $(document).ready(function(){
 		$('.pagelist').val(page);
 		$("#pic").empty();
 		for(var i=page*20;i<(pic_list.list.length<(page*20+20)?pic_list.list.length:(page*20+20));i++){  
-			$("#pic").append("<div class='img'><a target='_blank' href='/file/get_pic?method=generate&path="+urlencode(pic_list.list[i])+"&quality=100&width=1600&height=1200'> <img src='/file/get_pic?method=generate&path="+urlencode(pic_list.list[i])+"&quality=100&width=160&height=120' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+			$("#pic").append("<div class='img'><a target='_blank' href='/file/pic/"+urlencode(pic_list.list[i])+"'> <img src='/file/thumbnail/"+urlencode(pic_list.list[i])+"' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 		} 
 	});
 	$('.page').click(function(){
@@ -146,7 +146,7 @@ $(document).ready(function(){
 		$('.pagelist').val(page);
 		$("#pic").empty();
 		for(var i=page*20;i<(pic_list.list.length<(page*20+20)?pic_list.list.length:(page*20+20));i++){  
-			$("#pic").append("<div class='img'><a target='_blank' href='/file/get_pic?method=generate&path="+urlencode(pic_list.list[i])+"&quality=100&width=1600&height=1200'> <img src='/file/get_pic?method=generate&path="+urlencode(pic_list.list[i])+"&quality=100&width=160&height=120' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+			$("#pic").append("<div class='img'><a target='_blank' href='/file/pic/"+urlencode(pic_list.list[i])+"'> <img src='/file/thumbnail/"+urlencode(pic_list.list[i])+"' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 		}  
 		
 		return false;

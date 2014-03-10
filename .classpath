@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/httpmime-4.2.jar"/>
 	<classpathentry kind="lib" path="lib/json-lib-2.4-jdk15.jar"/>
 	<classpathentry kind="lib" path="lib/mcpack-1.0.0.9.jar"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload-1.2.2.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
