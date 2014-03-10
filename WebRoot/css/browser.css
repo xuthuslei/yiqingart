@@ -1,0 +1,105 @@
+/* ul#room,ul#day,ul#page {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+li {
+	float: left;
+}
+
+a.room:link,a.room:visited {
+	display: block;
+	width: 120px;
+	font-weight: bold;
+	color: #FFFFFF;
+	background-color: #bebebe;
+	text-align: center;
+	padding: 4px;
+	text-decoration: none;
+	text-transform: uppercase;
+}
+
+a.day:link,a.day:visited {
+	display: block;
+	width: 120px;
+	font-weight: bold;
+	color: #FFFFFF;
+	background-color: #cecece;
+	text-align: center;
+	padding: 4px;
+	text-decoration: none;
+	text-transform: uppercase;
+}
+
+a.page:link,a.page:visited {
+	display: block;
+	width: a;
+	font-weight: bold;
+	color: #FFFFFF;
+	background-color: #dedede;
+	text-align: center;
+	padding: 4px;
+	text-decoration: none;
+	text-transform: uppercase;
+}
+
+a.room:hover,a.room:active {
+	background-color: #cc0000;
+}
+
+a.day:hover,a.day:active {
+	background-color: #cc0000;
+}
+a.page:hover,a.page:active {
+	background-color: #cc0000;
+} */
+div.hisday,div.fix,div.hispage {
+	width: auto;
+	position: relative;
+	float: left;
+}
+
+div.clear {
+	clear: both;
+}
+
+div.img {
+	position: relative;
+	margin: 3px;
+	border: 1px solid #bebebe;
+	height: auto;
+	width: auto;
+	float: left;
+	text-align: center;
+}
+
+div.img img {
+	display: inline;
+	margin: 3px;
+	border: 1px solid #bebebe;
+}
+
+div.img a:hover img {
+	border: 1px solid #333333;
+}
+
+div.desc {
+	text-align: center;
+	font-weight: normal;
+	width: 310px;
+	font-size: 12px;
+	margin: 10px 5px 10px 5px;
+}
+
+.close_box {
+	background: #c0c0c0;
+	color: #fff;
+	padding: 2px 5px;
+	display: inline;
+	position: absolute;
+	right: 0px;
+	border-radius: 3px;
+	cursor: pointer;
+}

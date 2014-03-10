@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
+  <display-name>yiqingart</display-name>
+ <servlet>
+    <servlet-name>query</servlet-name>
+    <servlet-class>com.yiqingart.www.GetJson</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>query</servlet-name>
+    <url-pattern>/query/*</url-pattern>
+</servlet-mapping>
+
+<servlet>
+    <servlet-name>modify</servlet-name>
+    <servlet-class>com.yiqingart.www.Modify</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>modify</servlet-name>
+    <url-pattern>/modify/*</url-pattern>
+</servlet-mapping>
+
+<servlet>
+    <servlet-name>insert</servlet-name>
+    <servlet-class>com.yiqingart.www.Insert</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>insert</servlet-name>
+    <url-pattern>/insert/*</url-pattern>
+</servlet-mapping>
+
+<servlet>
+    <servlet-name>delete</servlet-name>
+    <servlet-class>com.yiqingart.www.Delete</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>delete</servlet-name>
+    <url-pattern>/delete/*</url-pattern>
+</servlet-mapping>
+
+<servlet>
+    <servlet-name>auth</servlet-name>
+    <servlet-class>com.yiqingart.www.Auth</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>auth</servlet-name>
+    <url-pattern>/auth/*</url-pattern>
+</servlet-mapping>
+<servlet>
+    <servlet-name>acra</servlet-name>
+    <servlet-class>com.yiqingart.www.Acra</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>acra</servlet-name>
+    <url-pattern>/acra/*</url-pattern>
+</servlet-mapping>
+<servlet>
+    <servlet-name>file</servlet-name>
+    <servlet-class>com.yiqingart.www.FileOperation</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>file</servlet-name>
+    <url-pattern>/file/*</url-pattern>
+</servlet-mapping>
+  <welcome-file-list>
+    <welcome-file>browser.html</welcome-file>
+  </welcome-file-list>
+</web-app>

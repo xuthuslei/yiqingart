@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+ 
+  <title>实时照片 </title>
+  <meta name="Generator" content="EditPlus">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Type" content="text/html; charset=GBK" />
+  <link rel="stylesheet" href="/static/jquery-ui.css" />
+  <link rel="stylesheet" href="/css/index.css" />
+  <script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
+  <script src="http://libs.baidu.com/jqueryui/1.10.2/jquery-ui.min.js "></script>
+<!--   <script src="/js/index.js "></script> -->
+<script>
+function toLogin()
+{
+   //以下为按钮点击事件的逻辑。注意这里要重新打开窗口
+   //否则后面跳转到QQ登录，授权页面时会直接缩小当前浏览器的窗口，而不是打开新窗口
+   var A=window.open("auth/qq_login","TencentLogin", "width=450,height=320,menubar=0,scrollbars=1,resizable=1,status=1,titlebar=0,toolbar=0,location=1");
+}
+function baiduLogin()
+{
+   //以下为按钮点击事件的逻辑。注意这里要重新打开窗口
+   //否则后面跳转到QQ登录，授权页面时会直接缩小当前浏览器的窗口，而不是打开新窗口
+   var A=window.open("auth/baidu_login","BaiduLogin", "width=450,height=320,menubar=0,scrollbars=1,resizable=1,status=1,titlebar=0,toolbar=0,location=1");
+}
+function get_time_str(time){
+	var d = new Date();
+	d.setTime(time);
+	return d.toLocaleString();
+} 
+
+$(document).ready(function(){
+	$.getJSON("/query/netdisk.json", function(data){
+		$("#netdisk_table").append("<tr><td>token</td><td>"+data.access_token+"</td></tr>");
+		$("#netdisk_table").append("<tr><td>refresh</td><td>"+data.refresh_token+"</td></tr>");
+		$("#netdisk_table").append("<tr><td>过期</td><td>"+get_time_str(data.expires_in)+"</td></tr>");
+	});
+});
+</script>
+<script type="text/javascript" id="bd_soc_login_boot"></script>
+<script type="text/javascript">
+(function(){
+    var t = new Date().getTime(),
+        script = document.getElementById("bd_soc_login_boot"),
+        redirect_uri = encodeURIComponent("http://yqartpic.duapp.com/auth/BAIDU_SOCIAL_CALLBACK"),
+        domid = "login",
+        src = "http://openapi.baidu.com/social/oauth/2.0/connect/login?redirect_uri=" + redirect_uri + "&domid=" + domid + "&client_type=web&response_type=code&media_types=qqdenglu&size=-1&button_type=2&client_id=5TL8PlqCuFnliMfsIlEyDXlz&view=embedded&t=" + t;
+    script.src = src;
+})();
+</script>
+</head>
+
+ <body>
+ <p align="center" > <a href="#" onclick='toLogin()'>
+<img src="/static/qq_login.png"></a></p>
+<p align="center" > <a href="auth/baidu_login" >
+百度网盘</a></p>
+<div>
+    请您使用第三方平台账号登陆：
+    <span id="login"></span>
+    </div> 
+ <div id="pic">
+ 
+
+ </div>
+ 
+ <h3 id="test"></h3> 
+ <table id='netdisk_table'>
+		<caption>网盘</caption>
+		<tr>
+			<th>项目</th>
+			<th>值</th>
+		</tr>
+	</table>
+ </body>
+</html>

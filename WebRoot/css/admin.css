@@ -1,0 +1,58 @@
+
+table, td, th {
+    border-style: double;
+    border-width: 2px;
+}
+table {
+    width: 800px;
+}
+td {
+    width: auto;
+}
+.group_name {
+    width: 5%;
+}
+.group_time {
+    width: 18%;
+}
+.group_time_p {
+    width: 5%;
+}
+.group_day {
+    width: 50%;
+}
+.group_time input {
+    width: 20px;
+}
+.group_name input {
+    width: 80px;
+}
+.phone_notonline
+{
+background-color:#ff0000;
+}
+.phone_notcfg
+{
+background-color:#D3D3D3;
+}
+.phone_normal
+{
+background-color:#00FF00;
+}
+.phone_oldcfg
+{
+background-color:#FFD700;
+}
+.legend
+{
+    float: left;
+    width: 90px;
+    text-align: center;
+}
+.clear {
+	clear: both;
+}
+.operrow
+{
+    width: 90px;
+}

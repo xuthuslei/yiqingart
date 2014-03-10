@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+<title>管理中心</title>
+<meta name="Generator" content="EditPlus">
+<meta name="Author" content="">
+<meta name="Keywords" content="">
+<meta name="Description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Type" content="text/html; charset=GBK" />
+<link rel="stylesheet" href="/static/jquery-ui.css" />
+<link rel="stylesheet" href="/css/admin.css" />
+<script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://libs.baidu.com/jqueryui/1.10.2/jquery-ui.min.js "></script>
+<script src="/js/admin.js "></script>
+</head>
+
+<body>
+	<table id='phone_state_table'>
+		<caption>手机活动状态</caption>
+		<tr>
+			<th>手机</th>
+			<th>位置</th>
+			<th>工作组</th>
+			<th>访问</th>
+			<th>版本</th>
+			<th>上传</th>
+			<th><a class='phone_opt' href='reset' >重启</a></th>
+			<th class='operrow'>操作</th>
+		</tr>
+	</table>
+	<div class="phone_normal legend">正常</div>
+	<div class="phone_notcfg legend">未配置</div>
+	<div class="phone_oldcfg legend">配置未生效</div>
+	<div class="phone_notonline legend">故障</div>
+	<div class="clear"></div>
+	<table id='work_group_table'>
+		<caption>工作组设置</caption>
+		<tr>
+			<th rowspan="2">组名</th>
+			<th rowspan="2">拍照时间</th>
+			<th rowspan="2">拍照间隔</th>
+			<th colspan="7">工作日</th>
+			<th rowspan="2" class='operrow'><a class='grp_opt' href='more' >增加组</a></th>
+		</tr>
+		<tr>
+			<th>一</th>
+			<th>二</th>
+			<th>三</th>
+			<th>四</th>
+			<th>五</th>
+			<th>六</th>
+			<th>日</th>
+		</tr>
+	</table>
+	<table id='work_place_table'>
+		<caption>位置设置</caption>
+		<tr>
+			<th>位置</th>
+			<th class='operrow'><a class='place_opt' href='more' >增加</a></th>
+		</tr>
+	</table>
+<!-- 	<table id='phone_cfg_table'> -->
+<!-- 		<caption>手机设置</caption> -->
+<!-- 		<tr> -->
+<!-- 			<th>手机号</th> -->
+<!-- 			<th>工作组</th> -->
+<!-- 			<th>教室</th> -->
+<!-- 			<th><a class='phone_opt' href='more' >增加</a></th> -->
+<!-- 		</tr> -->
+<!-- 	</table> -->
+	
+	
+	<div>
+	<p><a href="http://tongji.baidu.com/web/welcome/ico?s=53ef1ad966caadac8e0fe238fd90c5ba">查看百度统计报告</a></p>
+	<p >下载最新手机客户端<a href="/static/AutoShot2.5.apk">AutoShot2.5</a>|<a href="/static/AutoShot2.3.apk">AutoShot2.3</a>|<a href="/static/AutoShotDaemon0.3.apk">AutoShotDaemon0.3</a>
+    </p>
+	<p >注意：2.5在安装后第一次运行会要求root权限，需要点击允许。安装AutoShotDaemon后需要重启手机</p>
+	<p >2.5版本增加每天0点重启手机功能和使用adb工具远程升级功能</p>
+	<p >下载ADB工具<a href="/static/adbtool.zip">adbtool.zip</a>
+    </p></div>
+</body>
+</html>
