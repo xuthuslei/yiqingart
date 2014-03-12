@@ -25,6 +25,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
 import java.security.cert.X509Certificate;
 
 
@@ -188,6 +189,87 @@ public class HttpUtil {
         return response;
     }
 
+    private static byte[] getFileParameters(String fileName, String contentType, String charset)
+            throws UnsupportedEncodingException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Content-Disposition:form-data;name=\"");
+        sb.append("upload");
+        sb.append("\";filename=\"");
+        sb.append(fileName);
+        sb.append("\"\r\nContent-Type:");
+        sb.append(contentType);
+        sb.append("\r\n\r\n");
+        return sb.toString().getBytes(charset);
+    }
+    
+    private static byte[] getTextParameters(String fieldName, String fieldValue, String charset)
+            throws UnsupportedEncodingException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Content-Disposition:form-data;name=\"");
+        sb.append(fieldName);
+        sb.append("\"Content-Type:text/plain\r\n\r\n");
+        sb.append(fieldValue);
+        return sb.toString().getBytes(charset);
+    }
+
+    public static String uploadFile(String url, Map<String, Object> parameters) throws IOException {
+        String charset = "UTF-8";
+        String boundary = System.currentTimeMillis() + "";
+        String ctype = "multipart/form-data;charset=" + charset + ";boundary=" + boundary;
+        String method = "POST";
+        String response;
+        OutputStream out = null;
+        InputStream is = null;
+        HttpURLConnection conn;
+        try {
+            conn = getConnection(new URL(url), method, ctype);
+            conn.setConnectTimeout(CONNECTTIMEOUT);
+            conn.setReadTimeout(READTIMEOUT);
+            out = conn.getOutputStream();
+            byte[] entryBoundaryBytes = ("\r\n--" + boundary + "\r\n").getBytes(charset);
+            
+            if (parameters != null) {
+                for (Entry<String, Object> entry : parameters.entrySet()) {
+                	String key = entry.getKey();
+                    Object paramValue = entry.getValue();
+                    if ((paramValue instanceof byte[])) {
+                        //发�?文件参数
+                        byte[] fileParameters = getFileParameters(key, "content/unknown", charset);
+                        out.write(entryBoundaryBytes);
+                        out.write(fileParameters);
+                        out.write((byte[]) paramValue);
+                        continue;
+                    }
+                    String value = (String) paramValue;
+                    byte[] textParameters = getTextParameters(key, value, charset);
+                    out.write(entryBoundaryBytes);
+                    out.write(textParameters);
+                }
+            }
+
+            //请求结束标志
+            byte[] endBoundaryBytes = ("\r\n--" + boundary + "--\r\n").getBytes(charset);
+            out.write(endBoundaryBytes);
+            out.flush();
+            int respCode = conn.getResponseCode();
+            if (respCode == 200) {
+                is = conn.getInputStream();
+            } else {
+                is = conn.getErrorStream();
+            }
+            response = getResponseAsString(conn);
+            return response;
+        } finally {
+            if (is != null) {
+                is.close();
+                is = null;
+            }
+            if (out != null) {
+                out.close();
+                out = null;
+            }
+        }
+    }
     
 
     /**
