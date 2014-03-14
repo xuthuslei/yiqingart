@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONObject;
+
 
 public class FileCache {
 	private Logger logger = Logger.getLogger("Acra");
@@ -15,10 +17,12 @@ public class FileCache {
 	private HashMap<String , Node> picList = null; 
 	private HashMap<String , Node> thumbailList = null; 
 	private HashMap<String , Node> videoList = null; 
+	private HashMap<String , Node> roomNewPicList = null; 
 	public FileCache() {
 		picList = new HashMap<String , Node>(); 
 		thumbailList = new HashMap<String , Node>(); 
 		videoList = new HashMap<String , Node>(); 
+		roomNewPicList = new HashMap<String , Node>(); 
 	}
 	
 	public static FileCache getInstance(){
@@ -59,7 +63,7 @@ public class FileCache {
 				Node val = entry.getValue();
 				if(val.isExpire()){
 					logger.log(Level.INFO, nodekey + " Expire remove");
-					List.remove(nodekey);
+					iter.remove();
 				}
 				else{
 					if( longTime < val.usedTime()){
@@ -111,6 +115,14 @@ public class FileCache {
 
 	public void setVideo(String key, List<byte[]> value, Long ttl) {
 		setValue(videoList, key, value,  ttl, 40);
+	}
+	
+	public JSONObject getRoomNewPic(String key) {
+		return (JSONObject)getValue(roomNewPicList, key);
+	}
+
+	public void setRoomNewPic(String key, JSONObject value, Long ttl) {
+		setValue(roomNewPicList, key, value,  ttl, 20);
 	}
 	
 	private class Node {

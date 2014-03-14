@@ -29,6 +29,10 @@ public class Common {
 	final public static String BAE_SECRET_KEY = "KgRUZ7M7aaGR9bpwRarGNpX9ITxVwlP2";
 	final private static Logger logger = Logger.getLogger("Insert");
 	public static Connection getConnection() throws ClassNotFoundException, SQLException{
+		if(System.getProperty("baejavasdk.local").equalsIgnoreCase("true")){
+    		logger.log(Level.INFO, "is local");
+    		return getLocalConnection();
+    	}
 		String host = "sqld.duapp.com";
 		String port = "4050";
 		String driverName = "com.mysql.jdbc.Driver";
@@ -44,6 +48,27 @@ public class Common {
 		// 具体的数据库操作逻辑
 		connection = DriverManager.getConnection(connName, BAE_API_KEY,
 				BAE_SECRET_KEY);
+		
+		
+		return connection;
+	}
+	private static Connection getLocalConnection() throws ClassNotFoundException, SQLException{
+		
+		String host = "192.168.1.2";
+		String port = "3306";
+		String driverName = "com.mysql.jdbc.Driver";
+		String dbUrl = "jdbc:mysql://";
+		String serverName = host + ":" + port + "/";
+
+		// 从平台查询应用要使用的数据库名
+		String databaseName = "OxBssklEmKZUvxanzEVi";
+		String connName = dbUrl + serverName + databaseName;
+		Connection connection = null;
+		
+		Class.forName(driverName);
+		// 具体的数据库操作逻辑
+		connection = DriverManager.getConnection(connName, "admin",
+				"password");
 		
 		
 		return connection;

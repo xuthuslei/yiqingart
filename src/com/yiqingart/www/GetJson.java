@@ -364,19 +364,22 @@ public class GetJson extends HttpServlet {
 		String accessToken = Common.getAccessToken(session);
 		Map<String, String> params = new HashMap<String, String>();
 		String response;
-		BaeCache baeCache = Common.getBaeCache();
+		//BaeCache baeCache = Common.getBaeCache();
+		FileCache filecache = FileCache.getInstance();
 		
 		if (room == null) {
 			logger.log(Level.INFO, "null room ");
 			return null;
 		}
-		JSONObject file;
+		JSONObject file = null;
 		
-		String value = (String)baeCache.get("room_new_pic_" + path_id);
-		
-		if (value != null) {
-			file = new JSONObject(value);
+		file = filecache.getRoomNewPic(room);
+		if (file != null) {
 			file.put("memcached", "true");
+			if( path_id != null )
+			{
+				file.put("path_id", path_id);
+			}
 			return file.toString();
 		}
 
@@ -433,16 +436,12 @@ public class GetJson extends HttpServlet {
 				file.put("path_id", path_id);
 			}
 			
-			file.put("access_token", accessToken);
+			file.put("filecache", "from pcs");
+			filecache.setRoomNewPic(room, file, 15000l);
 			
 			logger.log(Level.INFO,
 					target + " found  pic " + file.getString("path"));
-			if(baeCache.add("room_new_pic_" + path_id, file.toString(), 15000)){
-				file.put("memcached", "put_true");
-			}
-			else{
-				file.put("memcached", "put_false:"+baeCache.getErrMsg());
-			}
+			
 			return file.toString();
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "error:", e);
@@ -791,6 +790,8 @@ private String getAdminData(HttpServletRequest req) {
 			            +"work_group_config.week5, "
 			            +"work_group_config.week6, "
 			            +"work_group_config.week7, "
+			            +"work_group_config.imgsize, "
+			            +"work_group_config.target, "
 			            +"phone_cfg.config_version, "
 			            +"netdisk.appsPath, "
 					    +"netdisk.access_token "
@@ -818,7 +819,15 @@ private String getAdminData(HttpServletRequest req) {
 				jsonResult.put("time_range_end_hour_key", rs.getInt("endHour"));
 				jsonResult.put("time_range_end_minute_key", rs.getInt("endMinute"));
 				jsonResult.put("local_name_key", rs.getNString("place_name"));
-				jsonResult.put("pic_width", 2000);
+				jsonResult.put("pic_width", rs.getInt("imgsize"));
+				jsonResult.put("target", rs.getInt("target"));
+				if(System.getProperty("baejavasdk.local").equalsIgnoreCase("true")){
+					jsonResult.put("domain", "http://192.168.1.10:8080");
+				}
+				else
+				{
+					jsonResult.put("domain", "http://yiqingart.duapp.com");
+				}
 				String weekSet = "";
 				if(rs.getInt("week1")==1){
 					weekSet += "true,";

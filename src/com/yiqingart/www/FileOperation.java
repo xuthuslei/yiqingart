@@ -27,6 +27,7 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONObject;
 
 import com.baidu.bae.api.memcache.BaeCache;
 import com.yiqingart.www.Acra.Method;
@@ -200,6 +201,10 @@ public class FileOperation extends HttpServlet {
 		// 在解析请求之前先判断请求类型是否为文件上传类型
 		String filename = URLDecoder.decode(req.getRequestURI().substring("/file/pic".length()), "UTF-8");
 		
+		String[] paramList = filename.split("/");
+		String room = "/"+paramList[1]+"/"+paramList[2]+"/"+paramList[3];
+		logger.log(Level.SEVERE, "room:"+room);
+	
 		FileCache filecache = FileCache.getInstance();
 		
 		// 文件上传处理工厂
@@ -244,6 +249,9 @@ public class FileOperation extends HttpServlet {
 				try {
 					String response = HttpUtil.uploadFile(url, params);
 					logger.log(Level.INFO, "response:"+response);
+					JSONObject file = new JSONObject(response);
+					file.put("filecache", "from mem");
+					filecache.setRoomNewPic(room, file, 300000l);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					logger.log(Level.SEVERE, "error:", e);

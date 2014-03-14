@@ -109,7 +109,7 @@ public class Modify extends HttpServlet {
 			// 具体的数据库操作逻辑
 			connection = Common.getConnection();
 			
-			String sql = "update work_group_config set group_name=? , shotFreq=? , beginHour=? , beginMinute=? , endHour=? , endMinute=? , week1=? , week2=? , week3=? , week4=? , week5=? ,  week6=? , week7=? , config_version=?  where workgroupid=?";
+			String sql = "update work_group_config set group_name=? , shotFreq=? , beginHour=? , beginMinute=? , endHour=? , endMinute=? , week1=? , week2=? , week3=? , week4=? , week5=? ,  week6=? , week7=? , imgsize=?, target=?, config_version=?  where workgroupid=?";
 		    PreparedStatement ps = connection.prepareStatement(sql);
 		    
 		    ps.setNString(1, req.getParameter("group_name"));
@@ -125,8 +125,10 @@ public class Modify extends HttpServlet {
 		    ps.setInt(11, Integer.valueOf(req.getParameter("week5")));
 		    ps.setInt(12, Integer.valueOf(req.getParameter("week6")));
 		    ps.setInt(13, Integer.valueOf(req.getParameter("week7")));
-		    ps.setLong(14, System.currentTimeMillis());
-		    ps.setLong(15, Long.valueOf(req.getParameter("workgroupid")));
+		    ps.setInt(14, Integer.valueOf(req.getParameter("imgsize")));
+		    ps.setInt(15, Integer.valueOf(req.getParameter("target")));
+		    ps.setLong(16, System.currentTimeMillis());
+		    ps.setLong(17, Long.valueOf(req.getParameter("workgroupid")));
 		    
 		    ps.executeUpdate();
 		    

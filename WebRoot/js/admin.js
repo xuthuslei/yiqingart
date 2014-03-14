@@ -16,17 +16,24 @@ function update_group_list(data) {
 		$("#"+groupid).append("<td class='group_name'><input type='text' value='"+data[i].group_name+"' /></td>");
 	
 			
-		$("#"+groupid).append("<td class='group_time'></td><td class='group_time_p'><select class='group_freq'></select></td><td><input type='checkbox' class='grp_w_1' /></td><td><input type='checkbox' class='grp_w_2' /></td><td><input type='checkbox' class='grp_w_3' /></td><td><input type='checkbox' class='grp_w_4' /></td><td><input type='checkbox' class='grp_w_5' /></td><td><input type='checkbox' class='grp_w_6' /></td><td><input type='checkbox' class='grp_w_7' /></td><td  class='group_opt'></td>");
+		$("#"+groupid).append("<td class='group_time'></td><td class='group_time_p'><select class='group_freq'></select></td><td><input type='checkbox' class='grp_w_1' /></td><td><input type='checkbox' class='grp_w_2' /></td><td><input type='checkbox' class='grp_w_3' /></td><td><input type='checkbox' class='grp_w_4' /></td><td><input type='checkbox' class='grp_w_5' /></td><td><input type='checkbox' class='grp_w_6' /></td><td><input type='checkbox' class='grp_w_7' /></td><td><select class='group_imgsize'></select></td><td><select class='group_target'></select></td><td  class='group_opt'></td>");
 		
 		
 		var temp_str = '<input type="text" class="grp_bh" value="'+data[i].beginHour+'" />:<input type="text" class="grp_bm" value="'+data[i].beginMinute+'" />-<input type="text" class="grp_eh" value="'+data[i].endHour+'" />:<input type="text" class="grp_em" value="'+data[i].endMinute+'" />';
 		$("#"+groupid).children(".group_time").append(temp_str);
 		
-		temp_str = '<option value="30" >30√Î÷”</option><option value="60" >1∑÷÷”</option><option value="120" >2∑÷÷”</option><option value="300" >5∑÷÷”</option>';
+		temp_str = '<option value="15" >15√Î÷”</option><option value="30" >30√Î÷”</option><option value="60" >1∑÷÷”</option><option value="120" >2∑÷÷”</option><option value="300" >5∑÷÷”</option>';
 		$("#"+groupid).find(".group_freq").append(temp_str);
 		$("#"+groupid).find(".group_freq").val(data[i].shotFreq);
 		
+		temp_str = '<option value="500" >500</option><option value="1000" >1000</option><option value="1500" >1500</option><option value="2000" >2000</option>';
+		$("#"+groupid).find(".group_imgsize").append(temp_str);
+		$("#"+groupid).find(".group_imgsize").val(data[i].imgsize);
 		
+		temp_str = '<option value="0" >Õ¯≈Ã</option><option value="1" >Õ¯’æ</option>';
+		$("#"+groupid).find(".group_target").append(temp_str);
+		$("#"+groupid).find(".group_target").val(data[i].target);
+	
 		if(1==data[i].week1) $("#"+groupid).find(".grp_w_1").attr("checked", true);
 		if(1==data[i].week2) $("#"+groupid).find(".grp_w_2").attr("checked", true);
 		if(1==data[i].week3) $("#"+groupid).find(".grp_w_3").attr("checked", true);
@@ -40,14 +47,22 @@ function update_group_list(data) {
 	$("#work_group_table").append("<tr id='"+groupid+"'></tr>");
 	$("#"+groupid).hide();
 	$("#"+groupid).append("<td class='group_name'><input type='text' /></td>");
-	$("#"+groupid).append("<td class='group_time'></td><td><select class='group_freq'></select></td><td><input type='checkbox' class='grp_w_1' /></td><td><input type='checkbox' class='grp_w_2' /></td><td><input type='checkbox' class='grp_w_3' /></td><td><input type='checkbox' class='grp_w_4' /></td><td><input type='checkbox' class='grp_w_5' /></td><td><input type='checkbox' class='grp_w_6' /></td><td><input type='checkbox' class='grp_w_7' /></td><td  class='group_opt'></td>");
+	$("#"+groupid).append("<td class='group_time'></td><td><select class='group_freq'></select></td><td><input type='checkbox' class='grp_w_1' /></td><td><input type='checkbox' class='grp_w_2' /></td><td><input type='checkbox' class='grp_w_3' /></td><td><input type='checkbox' class='grp_w_4' /></td><td><input type='checkbox' class='grp_w_5' /></td><td><input type='checkbox' class='grp_w_6' /></td><td><input type='checkbox' class='grp_w_7' /></td><td><select class='group_imgsize'></select></td><td><select class='group_target'></select></td><td  class='group_opt'></td>");
 	
 	
 	var temp_str = '<input class="grp_bh" type="text" />:<input class="grp_bm" type="text" />-<input class="grp_eh" type="text" />:<input class="grp_em" type="text" />';
 	$("#"+groupid).children(".group_time").append(temp_str);
 	
-	temp_str = '<option value="30" >30√Î÷”</option><option value="60" >1∑÷÷”</option><option value="120" >2∑÷÷”</option><option value="300" >5∑÷÷”</option>';
+	temp_str = '<option value="15" >15√Î÷”</option><option value="30" >30√Î÷”</option><option value="60" >1∑÷÷”</option><option value="120" >2∑÷÷”</option><option value="300" >5∑÷÷”</option>';
 	$("#"+groupid).find(".group_freq").append(temp_str);
+	
+	temp_str = '<option value="500" >500</option><option value="1000" >1000</option><option value="1500" >1500</option><option value="2000" >2000</option>';
+	$("#"+groupid).find(".group_imgsize").append(temp_str);
+	$("#"+groupid).find(".group_imgsize").val(2000);
+	
+	temp_str = '<option value="0" >Õ¯≈Ã</option><option value="1" >Õ¯’æ</option>';
+	$("#"+groupid).find(".group_target").append(temp_str);
+	$("#"+groupid).find(".group_target").val(1);
 	
 	$("#"+groupid).children(".group_opt").append("<a class='grp_opt' href='new' >±£¥Ê</a>");
 }
@@ -195,6 +210,8 @@ $(document).ready(function(){
 		params.beginMinute = $("#"+groupid).find(".grp_bm").val();
 		params.endHour = $("#"+groupid).find(".grp_eh").val();
 		params.endMinute = $("#"+groupid).find(".grp_em").val();
+		params.imgsize = $("#"+groupid).find(".group_imgsize").val();
+		params.target = $("#"+groupid).find(".group_target").val();
 		
 		if( $("#"+groupid).find(".grp_w_1").is(':checked'))params.week1 = 1;
 		if( $("#"+groupid).find(".grp_w_2").is(':checked'))params.week2 = 1;

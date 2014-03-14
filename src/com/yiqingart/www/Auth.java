@@ -188,6 +188,12 @@ public class Auth extends HttpServlet {
 			ps.setLong(3, json.getLong("expires_in")*1000 + System.currentTimeMillis());
 			ps.executeUpdate();
 			
+			sql = "update phone_cfg set config_version=? ";
+		    ps = connection.prepareStatement(sql);
+		    ps.setLong(1, System.currentTimeMillis());
+		    
+		    ps.executeUpdate();
+			
 //			PrintWriter pw = resp.getWriter();
 //			
 //			
@@ -258,6 +264,12 @@ public class Auth extends HttpServlet {
 			ps.setNString(2, json.getString("refresh_token"));
 			ps.setLong(3, json.getLong("expires_in")*1000 + System.currentTimeMillis());
 			ps.executeUpdate();
+			
+			sql = "update phone_cfg set config_version=? ";
+		    ps = connection.prepareStatement(sql);
+		    ps.setLong(1, System.currentTimeMillis());
+		    
+		    ps.executeUpdate();
 			
 			PrintWriter pw = resp.getWriter();
 			

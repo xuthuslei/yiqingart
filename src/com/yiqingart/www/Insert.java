@@ -103,7 +103,7 @@ public class Insert extends HttpServlet {
 		try {
 			connection = Common.getConnection();
 			
-			String sql = "insert into work_group_config( group_name, shotFreq, beginHour, beginMinute, endHour, endMinute, week1, week2, week3, week4, week5,  week6, week7, config_version ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			String sql = "insert into work_group_config( group_name, shotFreq, beginHour, beginMinute, endHour, endMinute, week1, week2, week3, week4, week5,  week6, week7, imgsize, target, config_version ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		    PreparedStatement ps = connection.prepareStatement(sql);
 		    
 		    ps.setNString(1, req.getParameter("group_name"));
@@ -119,7 +119,9 @@ public class Insert extends HttpServlet {
 		    ps.setInt(11, Integer.valueOf(req.getParameter("week5")));
 		    ps.setInt(12, Integer.valueOf(req.getParameter("week6")));
 		    ps.setInt(13, Integer.valueOf(req.getParameter("week7")));
-		    ps.setLong(14, System.currentTimeMillis());
+		    ps.setInt(14, Integer.valueOf(req.getParameter("imgsize")));
+		    ps.setInt(15, Integer.valueOf(req.getParameter("target")));
+		    ps.setLong(16, System.currentTimeMillis());
 		    
 		    ps.executeUpdate();
 		    
