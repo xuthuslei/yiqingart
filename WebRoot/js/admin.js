@@ -22,11 +22,11 @@ function update_group_list(data) {
 		var temp_str = '<input type="text" class="grp_bh" value="'+data[i].beginHour+'" />:<input type="text" class="grp_bm" value="'+data[i].beginMinute+'" />-<input type="text" class="grp_eh" value="'+data[i].endHour+'" />:<input type="text" class="grp_em" value="'+data[i].endMinute+'" />';
 		$("#"+groupid).children(".group_time").append(temp_str);
 		
-		temp_str = '<option value="15" >15√Î÷”</option><option value="30" >30√Î÷”</option><option value="60" >1∑÷÷”</option><option value="120" >2∑÷÷”</option><option value="300" >5∑÷÷”</option>';
+		temp_str = '<option value="30" >30√Î÷”</option><option value="60" >1∑÷÷”</option><option value="120" >2∑÷÷”</option><option value="300" >5∑÷÷”</option>';
 		$("#"+groupid).find(".group_freq").append(temp_str);
 		$("#"+groupid).find(".group_freq").val(data[i].shotFreq);
 		
-		temp_str = '<option value="500" >500</option><option value="1000" >1000</option><option value="1500" >1500</option><option value="2000" >2000</option>';
+		temp_str = '<option value="480" >480X320</option><option value="640" >640X480</option><option value="1600" >1600X1200</option><option value="2048" >2048X1536</option>';
 		$("#"+groupid).find(".group_imgsize").append(temp_str);
 		$("#"+groupid).find(".group_imgsize").val(data[i].imgsize);
 		
@@ -53,12 +53,12 @@ function update_group_list(data) {
 	var temp_str = '<input class="grp_bh" type="text" />:<input class="grp_bm" type="text" />-<input class="grp_eh" type="text" />:<input class="grp_em" type="text" />';
 	$("#"+groupid).children(".group_time").append(temp_str);
 	
-	temp_str = '<option value="15" >15√Î÷”</option><option value="30" >30√Î÷”</option><option value="60" >1∑÷÷”</option><option value="120" >2∑÷÷”</option><option value="300" >5∑÷÷”</option>';
+	temp_str = '<option value="30" >30√Î÷”</option><option value="60" >1∑÷÷”</option><option value="120" >2∑÷÷”</option><option value="300" >5∑÷÷”</option>';
 	$("#"+groupid).find(".group_freq").append(temp_str);
 	
-	temp_str = '<option value="500" >500</option><option value="1000" >1000</option><option value="1500" >1500</option><option value="2000" >2000</option>';
+	temp_str = '<option value="480" >480X320</option><option value="640" >640X480</option><option value="1600" >1600X1200</option><option value="2048" >2048X1536</option>';
 	$("#"+groupid).find(".group_imgsize").append(temp_str);
-	$("#"+groupid).find(".group_imgsize").val(2000);
+	$("#"+groupid).find(".group_imgsize").val(1600);
 	
 	temp_str = '<option value="0" >Õ¯≈Ã</option><option value="1" >Õ¯’æ</option>';
 	$("#"+groupid).find(".group_target").append(temp_str);

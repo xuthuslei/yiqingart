@@ -96,7 +96,7 @@ public class GetJson extends HttpServlet {
 			jsonString = getRoomListJson(session);
 			break;
 		case ROOM_NEWEST_PIC:
-			cacheSecond = 30;
+			cacheSecond = 25;
 			jsonString = getRoomNewestPicJson(session, req.getParameter("room"), req.getParameter("path_id"));
 			break;
 		case ROOM_DAY_LIST:
@@ -437,7 +437,7 @@ public class GetJson extends HttpServlet {
 			}
 			
 			file.put("filecache", "from pcs");
-			filecache.setRoomNewPic(room, file, 15000l);
+			filecache.setRoomNewPic(room, file, 25000l);
 			
 			logger.log(Level.INFO,
 					target + " found  pic " + file.getString("path"));
@@ -821,7 +821,7 @@ private String getAdminData(HttpServletRequest req) {
 				jsonResult.put("local_name_key", rs.getNString("place_name"));
 				jsonResult.put("pic_width", rs.getInt("imgsize"));
 				jsonResult.put("target", rs.getInt("target"));
-				if(System.getProperty("baejavasdk.local").equalsIgnoreCase("true")){
+				if((System.getProperty("baejavasdk.local")!=null)&&(System.getProperty("baejavasdk.local").equalsIgnoreCase("true"))){
 					jsonResult.put("domain", "http://192.168.1.10:8080");
 				}
 				else

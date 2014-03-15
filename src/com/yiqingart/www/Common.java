@@ -29,7 +29,7 @@ public class Common {
 	final public static String BAE_SECRET_KEY = "KgRUZ7M7aaGR9bpwRarGNpX9ITxVwlP2";
 	final private static Logger logger = Logger.getLogger("Insert");
 	public static Connection getConnection() throws ClassNotFoundException, SQLException{
-		if(System.getProperty("baejavasdk.local").equalsIgnoreCase("true")){
+		if((System.getProperty("baejavasdk.local")!=null)&&(System.getProperty("baejavasdk.local").equalsIgnoreCase("true"))){
     		logger.log(Level.INFO, "is local");
     		return getLocalConnection();
     	}
@@ -109,7 +109,7 @@ public class Common {
     
     public static String getAccessToken(HttpSession session) {
 
-    	if(System.getProperty("baejavasdk.local").equalsIgnoreCase("true")){
+    	if((System.getProperty("baejavasdk.local")!=null)&&(System.getProperty("baejavasdk.local").equalsIgnoreCase("true"))){
     		logger.log(Level.INFO, "is local");
     		return "21.e96287eb48c8961a19cb0c985fb1c551.2592000.1396597390.1732080263-1514280";
     	}
