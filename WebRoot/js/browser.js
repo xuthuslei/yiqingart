@@ -21,7 +21,7 @@ function updateimg() {
 			if(	data.hasOwnProperty("path_id")){
 				$("#"+data.path_id).show();
 				$("#"+data.path_id).empty();
-				$("#"+data.path_id).append("<div class='close_box'>X</div><a onclick=\"_hmt.push(['_trackEvent', '" + param.room.split("/",4)[3] + "', '" + param.room.split("/",4)[3] + "/大图'])\" target='_blank' href='/file/pic"+data.path+"'> <img src='/file/thumbnail"+data.path+"' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+data.path.split("/",6)[5]+"</div>");
+				$("#"+data.path_id).append("<div class='close_box'>X</div><a onclick=\"_hmt.push(['_trackEvent', '" + param.room.split("/",4)[3] + "', '" + param.room.split("/",4)[3] + "/大图'])\" target='_blank' href='/file/pic"+data.path+"'> <img src='/file/thumbnail"+data.path+"' alt='"+data.path.split("/",6)[3]+"' width='320' height='240'>  </a><div class='desc'>"+data.path.split("/",6)[5]+"</div>");
 			}
 			else{
 				if(isFirst == 1){
@@ -31,6 +31,12 @@ function updateimg() {
 		});
 	});
 	isFirst = 0;
+	$.getJSON("/query/livevideo.json", function(data){
+		$("#livevideo").empty();
+		if(data.length > 0){
+			$("#livevideo").append("<a href='/hls.html'><span style='background-color:#FF0000;'>当前有直播，点击观看</span></a>");
+		}
+	});
 }
 $(document).ready(function(){
 	$(".hisday").hide();
@@ -113,7 +119,7 @@ $(document).ready(function(){
 			}
 			
 			for(var i=0;i<(pic_list.list.length<20?pic_list.list.length:20);i++){  
-				$("#pic").append("<div class='img'><a target='_blank' href='/file/pic/"+urlencode(pic_list.list[i])+"'> <img src='/file/thumbnail/"+urlencode(pic_list.list[i])+"' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+				$("#pic").append("<div class='img'><a target='_blank' href='/file/pic"+pic_list.list[i]+"'> <img src='/file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 			}  
 		});
 	});
@@ -122,7 +128,7 @@ $(document).ready(function(){
 		$('.pagelist').val(page);
 		$("#pic").empty();
 		for(var i=page*20;i<(pic_list.list.length<(page*20+20)?pic_list.list.length:(page*20+20));i++){  
-			$("#pic").append("<div class='img'><a target='_blank' href='/file/pic/"+urlencode(pic_list.list[i])+"'> <img src='/file/thumbnail/"+urlencode(pic_list.list[i])+"' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+			$("#pic").append("<div class='img'><a target='_blank' href='/file/pic"+pic_list.list[i]+"'> <img src='/file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 		} 
 	});
 	$('.page').click(function(){
@@ -146,7 +152,7 @@ $(document).ready(function(){
 		$('.pagelist').val(page);
 		$("#pic").empty();
 		for(var i=page*20;i<(pic_list.list.length<(page*20+20)?pic_list.list.length:(page*20+20));i++){  
-			$("#pic").append("<div class='img'><a target='_blank' href='/file/pic/"+urlencode(pic_list.list[i])+"'> <img src='/file/thumbnail/"+urlencode(pic_list.list[i])+"' alt='Ballade' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+			$("#pic").append("<div class='img'><a target='_blank' href='/file/pic"+pic_list.list[i]+"'> <img src='/file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 		}  
 		
 		return false;

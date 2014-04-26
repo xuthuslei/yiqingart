@@ -27,6 +27,7 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.baidu.bae.api.memcache.BaeCache;
@@ -70,6 +71,7 @@ public class FileOperation extends HttpServlet {
 		case VIDEO:
 			file_get_video( req, resp);
 			break;
+		
 		default:
 			PrintWriter pw = resp.getWriter();
 			pw.write("wrong");
@@ -332,12 +334,32 @@ public class FileOperation extends HttpServlet {
 		String filename = URLDecoder.decode(req.getRequestURI().substring("/file/video".length()), "UTF-8");
 		logger.log(Level.INFO, "filename:" + filename + " method:" + method);
 		FileCache filecache = FileCache.getInstance();
-
-		List<byte[]> value = (List<byte[]>) filecache.getVideo(filename);
-
+		String formate = filename.substring(filename.lastIndexOf('.')+1);
+		List<byte[]> value = null;
+		if(formate.equalsIgnoreCase("ts")){
+		    resp.setContentType("video/MP2T");
+		    value = (List<byte[]>) filecache.getVideo(filename);
+		}
+		else if(formate.equalsIgnoreCase("m3u8")){
+		    resp.setContentType("application/x-mpegURL");
+		    value = (List<byte[]>) filecache.getM3U8(filename);
+		}
+		else{
+		    resp.setContentType("application/octet-stream");
+		    value = (List<byte[]>) filecache.getVideo(filename);
+		}
+		    
+		resp.setDateHeader("Expires",System.currentTimeMillis() + 5*1000);
+		
 		if (value == null) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 		} else {
+		    int len = 0;
+		    for (int i = 0; i < value.size(); i++) {
+                byte data[] = value.get(i);
+                len +=data.length;
+            }
+		    resp.setContentLength(len);
 			OutputStream o = resp.getOutputStream();
 			for (int i = 0; i < value.size(); i++) {
 				byte data[] = value.get(i);
@@ -354,6 +376,7 @@ public class FileOperation extends HttpServlet {
 		String filename = URLDecoder.decode(req.getRequestURI().substring("/file/video".length()), "UTF-8");
 		logger.log(Level.INFO, "filename:" + filename + " method:" + method);
 		FileCache filecache = FileCache.getInstance();
+		String formate = filename.substring(filename.lastIndexOf('.')+1);
 		
 		InputStream is = req.getInputStream();
 		byte[] buf = new byte[1024]; // 32k buffer
@@ -363,7 +386,7 @@ public class FileOperation extends HttpServlet {
 		int count = 0;
 		while ((nRead = is.read(buf)) != -1) {
 			count += nRead;
-			logger.log(Level.INFO, "count:" + count);
+			//logger.log(Level.INFO, "count:" + count);
 			if (nRead == 1024) {
 				value.add(buf.clone());
 			} else {
@@ -371,7 +394,12 @@ public class FileOperation extends HttpServlet {
 			}
 		}
 
-		filecache.setVideo(filename, value, 600000l);		
+		if(formate.equalsIgnoreCase("m3u8")){
+		    filecache.setM3U8(filename, value, 60000l);
+        }
+        else{
+            filecache.setVideo(filename, value, 120000l);
+        }		
 	}
 	private void file_post_video(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
@@ -380,6 +408,7 @@ public class FileOperation extends HttpServlet {
 		String filename = URLDecoder.decode(req.getRequestURI().substring("/file/video".length()), "UTF-8");
 		logger.log(Level.INFO, "filename:" + filename + " method:" + method);
 		FileCache filecache = FileCache.getInstance();
+		String formate = filename.substring(filename.lastIndexOf('.')+1);
 		
 		// 文件上传处理工厂
 		FileItemFactory factory = new DiskFileItemFactory();
@@ -407,7 +436,12 @@ public class FileOperation extends HttpServlet {
 			else {
 				List<byte[]> value = new ArrayList<byte[]>();
 				value.add(item.get());
-				filecache.setVideo(filename, value, 600000l);
+				if(formate.equalsIgnoreCase("m3u8")){
+		            filecache.setM3U8(filename, value, 60000l);
+		        }
+		        else{
+		            filecache.setVideo(filename, value, 120000l);
+		        }   
 			}
 		}
 	}

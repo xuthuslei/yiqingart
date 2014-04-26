@@ -45,7 +45,7 @@ public class GetJson extends HttpServlet {
 	private Logger logger = Logger.getLogger("GetJson");
 
 	public enum Method {
-		HELLO,ACCESS_TOKEN, NEW_PIC_LIST, ROOM_LIST, ROOM_NEWEST_PIC, ROOM_DAY_LIST, ROOM_DAY_PIC_LIST, WORK_GROUP_LIST, PHONE_HEARTBEAT, ADMIN_DATA , NETDISK, NOVALUE;
+		HELLO,ACCESS_TOKEN, NEW_PIC_LIST, ROOM_LIST, ROOM_NEWEST_PIC, ROOM_DAY_LIST, ROOM_DAY_PIC_LIST, WORK_GROUP_LIST, PHONE_HEARTBEAT, ADMIN_DATA , NETDISK, LIVEVIDEO, NOVALUE;
 		public static Method toMethod(String str) {
 			try {
 				return valueOf(str);
@@ -131,6 +131,8 @@ public class GetJson extends HttpServlet {
 		case NETDISK:
 			jsonString = getNetDiskJson(req);
 			break;
+		case LIVEVIDEO:
+		    jsonString = getLiveVideo();
 		default:
 			break;
 		}
@@ -158,6 +160,19 @@ public class GetJson extends HttpServlet {
 		pw.close(); 
 	}
 
+	private String  getLiveVideo() {
+        FileCache filecache = FileCache.getInstance();
+        String[] list = filecache.getM3U8List();
+        if(list == null){
+            return "[]";
+        }
+        JSONArray jsonResult = new JSONArray();
+        for(String key: list){
+            jsonResult.put(key);
+        }
+        
+        return jsonResult.toString();
+    }
 	private String getAccessTokenJson(HttpSession session) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("access_token", Common.getAccessToken(session));

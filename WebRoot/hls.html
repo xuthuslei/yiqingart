@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html><head><title>视频直播</title>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body style="color: Black; background-color: White;" link="Blue" vlink="Purple">
+
+
+<div style="width: 640px; height: 480px;" id="player"></div>
+<script type="text/javascript" src="/static/jwplayer.js"></script>
+
+
+<script type="text/javascript">
+function ismoblie(){
+    var system ={
+        win : false,
+        mac : false,
+        xll : false
+    };
+    //检测平台
+    var p = navigator.platform;
+    system.win = p.indexOf("Win") == 0;
+    system.mac = p.indexOf("Mac") == 0;
+    system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+    //跳转语句
+    if(system.win||system.mac||system.xll){
+        return false;
+    }else{
+        return true;
+    }
+}
+if(ismoblie()){
+    str = '<video tabindex="0" height="480" width="640" controls="controls" autoplay="autoplay"><source src="/file/video/test.m3u8"></video>';
+    document.getElementById("player").innerHTML=str;
+}
+else{
+	jwplayer("player").setup({
+	width: 640,height: 480,
+	skin: "/static/newtubedark.zip",
+	plugins: { '/static/qualitymonitor.swf' : {} },
+	modes: [
+	{ type:'flash', src:'/static/player.swf', config: { provider:'/static/HLSProvider5.swf', file:'/file/video/test.m3u8' } },
+	{ type:'html5', config: { file:'/file/video/test.m3u8' } }
+	]});
+}
+</script>
+</div>
+</body></html>

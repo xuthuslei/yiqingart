@@ -5,6 +5,10 @@ function update_table() {
 		//update_phone_cfg(data);
 		update_phone_state(data);
 	});
+	$.getJSON("/query/netdisk.json", function(data){
+		$("#netdisk_expires").text(get_time_str(data.expires_in));
+		$("#netdisk_remain").text(Math.round((data.quota-data.used)/(1024*1024*1024))+"GB");
+	});
 }
 function update_group_list(data) {  
 	$("#work_group_table").find("[id]").remove();

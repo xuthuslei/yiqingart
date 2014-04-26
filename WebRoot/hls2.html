@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>hls</title>
+<meta name="Generator" content="EditPlus">
+<meta name="Author" content="">
+<meta name="Keywords" content="">
+<meta name="Description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Type" content="text/html; charset=GBK" />
+</head>
+
+<body>
+<div id="livevideo">
+<!-- <object width="320" height="240"> -->
+<!--     <param name="movie" value="/static/hlsplayer.swf"></param -->
+<!--     <param name="flashvars" value="src=http%3A%2F%2F127.0.0.1:8080%2Ffile%2Fvideo%2Ftest.m3u8&autoPlay=true"></param> -->
+<!--     <param name="allowFullScreen" value="true"></param>  -->
+<!--     <param name="allowscriptaccess" value="always"></param> -->
+<!--     <param name="wmode" value="direct"></param> -->
+<!--     <embed src="/static/hlsplayer.swf" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" wmode="direct" width="320" height="240" flashvars="src=http%3A%2F%2F127.0.0.1:8080%2Ffile%2Fvideo%2Ftest.m3u8&autoPlay=true"></embed> -->
+<!-- </object>   -->
+</div>
+<script type="text/javascript">
+function ismoblie(){
+	var system ={
+		win : false,
+		mac : false,
+		xll : false
+	};
+	//检测平台
+	var p = navigator.platform;
+	system.win = p.indexOf("Win") == 0;
+	system.mac = p.indexOf("Mac") == 0;
+	system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+	//跳转语句
+	if(system.win||system.mac||system.xll){
+		return false;
+	}else{
+	    return true;
+	}
+}
+if(ismoblie()){
+	str = '<video tabindex="0" height="480" width="640" controls="controls" autoplay="autoplay"><source src="/file/video/test.m3u8"></video>';
+	document.getElementById("livevideo").innerHTML=str;
+}
+else{
+	str = "<object width=\"640\" height=\"480\"><param name=\"movie\" value=\"/static/hlsplayer.swf\"></param<param name=\"flashvars\" value=\"src=http%3A%2F%2F"+document.domain+"%2Ffile%2Fvideo%2Ftest.m3u8&autoPlay=true\"></param>    <param name=\"allowFullScreen\" value=\"true\"></param> <param name=\"allowscriptaccess\" value=\"always\"></param>    <param name=\"wmode\" value=\"direct\"></param>    <embed src=\"/static/hlsplayer.swf\" type=\"application/x-shockwave-flash\" allowscriptaccess=\"always\" allowfullscreen=\"true\" wmode=\"direct\" width=\"640\" height=\"480\" flashvars=\"src=http%3A%2F%2F"+document.domain+"%2Ffile%2Fvideo%2Ftest.m3u8&autoPlay=true\"></embed></object>";
+	document.getElementById("livevideo").innerHTML=str;
+}
+</script>
+
+</body>
+</html>

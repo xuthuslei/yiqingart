@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,11 +18,13 @@ public class FileCache {
 	private HashMap<String , Node> picList = null; 
 	private HashMap<String , Node> thumbailList = null; 
 	private HashMap<String , Node> videoList = null; 
+	private HashMap<String , Node> m3u8List = null; 
 	private HashMap<String , Node> roomNewPicList = null; 
 	public FileCache() {
 		picList = new HashMap<String , Node>(); 
 		thumbailList = new HashMap<String , Node>(); 
 		videoList = new HashMap<String , Node>(); 
+		m3u8List = new HashMap<String , Node>(); 
 		roomNewPicList = new HashMap<String , Node>(); 
 	}
 	
@@ -88,7 +91,20 @@ public class FileCache {
 		List.put(key, node);
 		logger.log(Level.INFO, "put  "+key);
 	}
-	
+	private String[] getList(HashMap<String, Node> List){
+	    if (List.size() >0 ) {
+	        Set<String> reslut = List.keySet();
+	        for( String key : reslut){
+	            if(getValue(List, key) == null){
+	                reslut.remove(key);
+	            }
+	        }
+            return reslut.toArray(new String[0]);
+        }
+	    else{
+	        return null;
+	    }
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<byte[]> getPic(String key) {
@@ -114,8 +130,21 @@ public class FileCache {
 	}
 
 	public void setVideo(String key, List<byte[]> value, Long ttl) {
-		setValue(videoList, key, value,  ttl, 40);
+		setValue(videoList, key, value,  ttl, 12);
 	}
+	
+	@SuppressWarnings("unchecked")
+    public List<byte[]> getM3U8(String key) {
+        return (List<byte[]>)getValue(m3u8List, key);
+    }
+    
+    public String[] getM3U8List() {
+        return getList(m3u8List);
+    }
+
+    public void setM3U8(String key, List<byte[]> value, Long ttl) {
+        setValue(m3u8List, key, value,  ttl, 4);
+    }
 	
 	public JSONObject getRoomNewPic(String key) {
 		return (JSONObject)getValue(roomNewPicList, key);

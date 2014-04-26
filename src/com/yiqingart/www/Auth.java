@@ -271,14 +271,15 @@ public class Auth extends HttpServlet {
 		    
 		    ps.executeUpdate();
 			
-			PrintWriter pw = resp.getWriter();
-			
-			
-			pw.write("refresh ok");
-		
-
-			pw.flush();
-			pw.close();
+//			PrintWriter pw = resp.getWriter();
+//			
+//			
+//			pw.write("refresh ok");
+//		
+//
+//			pw.flush();
+//			pw.close();
+			resp.sendRedirect("/admin.html");
 
 		}
 		catch (Exception e) {
