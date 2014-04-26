@@ -35,6 +35,11 @@ if(ismoblie()){
 }
 else{
 	jwplayer("player").setup({
+		hls_debug : false,
+		hls_debug2 : false,
+		hls_lowbufferlength : 5,    
+		hls_minbufferlength : 30,
+		hls_maxbufferlength : 60,	
 	width: 640,height: 480,
 	skin: "/static/newtubedark.zip",
 	plugins: { '/static/qualitymonitor.swf' : {} },

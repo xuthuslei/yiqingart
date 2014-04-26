@@ -130,7 +130,7 @@ public class FileCache {
 	}
 
 	public void setVideo(String key, List<byte[]> value, Long ttl) {
-		setValue(videoList, key, value,  ttl, 12);
+		setValue(videoList, key, value,  ttl, 48);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -143,7 +143,7 @@ public class FileCache {
     }
 
     public void setM3U8(String key, List<byte[]> value, Long ttl) {
-        setValue(m3u8List, key, value,  ttl, 4);
+        setValue(m3u8List, key, value,  ttl, 6);
     }
 	
 	public JSONObject getRoomNewPic(String key) {
