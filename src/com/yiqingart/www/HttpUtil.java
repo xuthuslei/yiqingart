@@ -15,6 +15,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -232,12 +233,26 @@ public class HttpUtil {
                 for (Entry<String, Object> entry : parameters.entrySet()) {
                 	String key = entry.getKey();
                     Object paramValue = entry.getValue();
-                    if ((paramValue instanceof byte[])) {
+                    if (paramValue instanceof byte[]) {
                         //发�?文件参数
                         byte[] fileParameters = getFileParameters(key, "content/unknown", charset);
                         out.write(entryBoundaryBytes);
                         out.write(fileParameters);
                         out.write((byte[]) paramValue);
+                        continue;
+                    }
+                    else if(paramValue instanceof List<?>) {
+                        //发�?文件参数
+                        @SuppressWarnings("unchecked")
+                        List<byte[]> value = (List<byte[]>) paramValue;
+                        byte[] fileParameters = getFileParameters(key, "content/unknown", charset);
+                        out.write(entryBoundaryBytes);
+                        out.write(fileParameters);
+                        for (int i = 0; i < value.size(); i++) {
+                            byte data[] = value.get(i);
+                            out.write(data);
+                        }
+                        
                         continue;
                     }
                     String value = (String) paramValue;

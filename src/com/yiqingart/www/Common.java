@@ -8,6 +8,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -106,12 +108,20 @@ public class Common {
       
        return array;
     }
-    
+    public static String getDay(){
+        final Calendar c = Calendar.getInstance();
+        c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+        int mYear = c.get(Calendar.YEAR); // 获取当前年份
+        int mMonth = c.get(Calendar.MONTH) + 1;// 获取当前月份
+        int mDay = c.get(Calendar.DAY_OF_MONTH);// 获取当前月份的日期号码
+        String target = String.format("%04d-%02d-%02d", mYear, mMonth, mDay);
+        return target;
+    }
     public static String getAccessToken(HttpSession session) {
 
     	if((System.getProperty("baejavasdk.local")!=null)&&(System.getProperty("baejavasdk.local").equalsIgnoreCase("true"))){
     		logger.log(Level.INFO, "is local");
-    		return "21.e96287eb48c8961a19cb0c985fb1c551.2592000.1396597390.1732080263-1514280";
+    		//return "21.e96287eb48c8961a19cb0c985fb1c551.2592000.1396597390.1732080263-1514280";
     	}
 		if (null != session) {
 			String access_token = (String) session.getAttribute("access_token");

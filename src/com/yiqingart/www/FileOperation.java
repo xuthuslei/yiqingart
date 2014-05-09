@@ -1,6 +1,7 @@
 package com.yiqingart.www;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -8,6 +9,8 @@ import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,7 +46,7 @@ public class FileOperation extends HttpServlet {
 	private Logger logger = Logger.getLogger("FileOperation");
 
 	public enum Method {
-		THUMBNAIL, PIC, VIDEO, NOVALUE;
+		THUMBNAIL, PIC, VIDEO, RECORD, NOVALUE;
 		public static Method toMethod(String str) {
 			try {
 				return valueOf(str);
@@ -71,7 +74,9 @@ public class FileOperation extends HttpServlet {
 		case VIDEO:
 			file_get_video( req, resp);
 			break;
-		
+		case RECORD:
+		    file_get_record( req, resp);
+		    break;
 		default:
 			PrintWriter pw = resp.getWriter();
 			pw.write("wrong");
@@ -369,6 +374,79 @@ public class FileOperation extends HttpServlet {
 			o.close();
 		}
 	}
+	private String get_video_record(String filename){
+	    String[] list = filename.toString().split("/");
+	    String result;
+	    
+	    String sql = "select filename, duration from  livevideo WHERE date='"+list[1]+"' and room='"+list[2]+"'";
+
+	    logger.log(Level.INFO, "sql:"+sql);
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            // 具体的数据库操作逻辑
+            connection = Common.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(sql);
+            result  = "#EXTM3U\n";
+            result += "#EXT-X-VERSION:3\n";
+            result += "#EXT-X-TARGETDURATION:10\n";
+            result += "#EXT-X-MEDIA-SEQUENCE:0\n";
+             
+            while(rs.next()){
+                result += "#EXTINF:"+  rs.getInt("duration") +",\n";
+                result += rs.getNString("filename") +"\n";
+            }
+            result += "#EXT-X-ENDLIST\n";
+            return result;
+        } catch (Exception e) {
+            // 异常处理逻辑
+            logger.log(Level.SEVERE, "error:", e);
+            return "";
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "error:", e);
+                return "";
+            }
+        }
+	}
+	private void insert_video_record(String filename, int duration){
+	    String[] list = filename.toString().split("/");
+	    
+	    Connection connection = null;
+        try {
+            connection = Common.getConnection();
+            
+            String sql = "insert into livevideo( date, room, time, filename, duration ) values (CURDATE(),?,CURTIME(),?,?)";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            
+            ps.setNString(1, list[1]);
+            ps.setNString(2, list[2]);
+            ps.setInt(3, duration);
+            
+            ps.executeUpdate();
+            
+            return ;
+        } catch (Exception e) {
+            // 异常处理逻辑
+            logger.log(Level.SEVERE, "error:", e);
+            return ;
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "error:", e);
+                return ;
+            }
+        }
+	}
 	private void file_put_video(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
 		// 在解析请求之前先判断请求类型是否为文件上传类型
@@ -399,6 +477,27 @@ public class FileOperation extends HttpServlet {
         }
         else{
             filecache.setVideo(filename, value, 120000l);
+            String accessToken = Common.getAccessToken(null);
+            insert_video_record(filename, req.getIntHeader("x-hls-duration"));         
+            
+            Map<String, String> urlparams = new HashMap<String, String>();
+            Map<String, Object> params = new HashMap<String, Object>();
+            
+            urlparams.put("method", "upload");
+            urlparams.put("access_token", accessToken);
+            urlparams.put("path", "/apps/yqart/live/"+Common.getDay()+filename);    
+            String url = "https://c.pcs.baidu.com/rest/2.0/pcs/file?"+HttpUtil.buildQuery(urlparams, "UTF-8");
+            urlparams.clear();
+            
+            params.put("file", value);
+            
+            try {
+                String response = HttpUtil.uploadFile(url, params);
+                logger.log(Level.INFO, "response:"+response);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                logger.log(Level.SEVERE, "error:", e);
+            }
         }		
 	}
 	private void file_post_video(HttpServletRequest req, HttpServletResponse resp)
@@ -446,4 +545,75 @@ public class FileOperation extends HttpServlet {
 		}
 	}
 	
+   private static URLConnection reload(URLConnection uc) throws Exception {
+
+        HttpURLConnection huc = (HttpURLConnection) uc;
+        
+        if (huc.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP 
+                || huc.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM)// 302, 301
+            return reload(new URL(huc.getHeaderField("location")).openConnection());
+        
+        return uc;
+    }
+	private void file_get_record(HttpServletRequest req, HttpServletResponse resp) throws IOException  {
+	    String filename = URLDecoder.decode(req.getRequestURI().substring("/file/record".length()), "UTF-8");
+	    logger.log(Level.INFO, "file_get_record filename:" + filename);
+	    String formate = filename.substring(filename.lastIndexOf('.')+1);
+        List<byte[]> value = null;
+        if(formate.equalsIgnoreCase("ts")){
+            resp.setContentType("video/MP2T");
+            HttpSession session = req.getSession(true);// 如果没有该session，则自动创建一个新的
+            String access_token = Common.getAccessToken(session);
+            resp.setContentType("application/octet-stream");
+            Map<String, String> urlparams = new HashMap<String, String>();
+            urlparams.put("method", "download");
+            urlparams.put("access_token", access_token);
+            urlparams.put("path", "/apps/yqart/live"+filename);    
+                
+            String url = "https://d.pcs.baidu.com/rest/2.0/pcs/file?" + HttpUtil.buildQuery(urlparams, "UTF-8");
+            OutputStream o = resp.getOutputStream();
+            
+            URL connect = new URL(url.toString());
+            URLConnection connection = connect.openConnection();
+            
+            try {
+                connection = reload(connection);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                logger.log(Level.SEVERE, "error:", e);
+                return;
+            }
+                        
+            InputStream is = connection.getInputStream();
+            byte[] buf = new byte[1024]; // 32k buffer
+            value =new ArrayList<byte[]>();
+            
+            int nRead = 0;
+            while( (nRead=is.read(buf)) != -1 ) {
+                if( nRead == 1024 ){
+                    value.add(buf.clone());
+                }
+                else {
+                    value.add(subBytes(buf, 0 , nRead));
+                }
+                
+                o.write(buf, 0, nRead);
+            }
+            
+            o.flush();
+            o.close();
+        }
+        else if(formate.equalsIgnoreCase("m3u8")){
+            resp.setContentType("application/x-mpegURL");
+            PrintWriter pw = resp.getWriter();
+            
+            pw.write(get_video_record(filename));
+            pw.flush();
+            pw.close(); 
+            get_video_record(filename);
+        }
+        else{
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+	}
 }

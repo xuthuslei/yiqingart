@@ -45,7 +45,7 @@ public class GetJson extends HttpServlet {
 	private Logger logger = Logger.getLogger("GetJson");
 
 	public enum Method {
-		HELLO,ACCESS_TOKEN, NEW_PIC_LIST, ROOM_LIST, ROOM_NEWEST_PIC, ROOM_DAY_LIST, ROOM_DAY_PIC_LIST, WORK_GROUP_LIST, PHONE_HEARTBEAT, ADMIN_DATA , NETDISK, LIVEVIDEO, NOVALUE;
+		HELLO,ACCESS_TOKEN, NEW_PIC_LIST, ROOM_LIST, ROOM_NEWEST_PIC, ROOM_DAY_LIST, ROOM_DAY_PIC_LIST, WORK_GROUP_LIST, PHONE_HEARTBEAT, ADMIN_DATA , NETDISK, LIVEVIDEO, RECORDVIDEO, NOVALUE;
 		public static Method toMethod(String str) {
 			try {
 				return valueOf(str);
@@ -133,6 +133,9 @@ public class GetJson extends HttpServlet {
 			break;
 		case LIVEVIDEO:
 		    jsonString = getLiveVideo();
+		case RECORDVIDEO:
+		    jsonString = getRecordVideo();
+		    break;
 		default:
 			break;
 		}
@@ -172,6 +175,37 @@ public class GetJson extends HttpServlet {
         }
         
         return jsonResult.toString();
+    }
+	private String  getRecordVideo() {
+	    String sql = "SELECT DISTINCT date, room FROM `livevideo` order by date, room";
+
+        logger.log(Level.INFO, "sql:"+sql);
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            // 具体的数据库操作逻辑
+            connection = Common.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(sql);
+            JSONObject jsonResult = new JSONObject();
+            
+            jsonResult.put("list", Common.resultSetToJson(rs));
+            return jsonResult.toString();
+        } catch (Exception e) {
+            // 异常处理逻辑
+            logger.log(Level.SEVERE, "error:", e);
+            return "";
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "error:", e);
+                return "";
+            }
+        }
     }
 	private String getAccessTokenJson(HttpSession session) {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -241,6 +275,7 @@ public class GetJson extends HttpServlet {
 		BaeCache baeCache = Common.getBaeCache();
 		JSONObject json;
 		
+		logger.log(Level.INFO, "accessToken:", accessToken);
 		String value = (String)baeCache.get("room_list");
 		
 		if (value != null) {

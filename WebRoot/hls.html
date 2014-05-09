@@ -2,11 +2,14 @@
 <html><head><title>视频直播</title>
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 <meta content="utf-8" http-equiv="encoding">
+<script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
 </head>
+<div class='fix'>选择房间:<select id="roomsel" ></select></div>
 <body style="color: Black; background-color: White;" link="Blue" vlink="Purple">
 
 
 <div style="width: 640px; height: 480px;" id="player"></div>
+
 <script type="text/javascript" src="/static/jwplayer.js"></script>
 
 
@@ -29,25 +32,41 @@ function ismoblie(){
         return true;
     }
 }
-if(ismoblie()){
-    str = '<video tabindex="0" height="480" width="640" controls="controls" autoplay="autoplay"><source src="/file/video/test.m3u8"></video>';
-    document.getElementById("player").innerHTML=str;
+function player(room){
+	if(ismoblie()){
+	    str = '<video tabindex="0" height="240" width="320" controls="controls" autoplay ><source src="/file/video'+room+'"></video>';
+	    document.getElementById("player").innerHTML=str;
+	}
+	else{
+		jwplayer("player").setup({
+			hls_debug : false,
+			hls_debug2 : false,
+			hls_lowbufferlength : 5,    
+			hls_minbufferlength : 30,
+			hls_maxbufferlength : 60,	
+		width: 640,height: 480,
+		skin: "/static/newtubedark.zip",
+		plugins: { '/static/qualitymonitor.swf' : {} },
+		modes: [
+		{ type:'flash', src:'/static/player.swf', config: { provider:'/static/HLSProvider5.swf', file:'/file/video'+room } },
+		{ type:'html5', config: { file:'/file/video'+room } }
+		]});
+	}
 }
-else{
-	jwplayer("player").setup({
-		hls_debug : false,
-		hls_debug2 : false,
-		hls_lowbufferlength : 5,    
-		hls_minbufferlength : 30,
-		hls_maxbufferlength : 60,	
-	width: 640,height: 480,
-	skin: "/static/newtubedark.zip",
-	plugins: { '/static/qualitymonitor.swf' : {} },
-	modes: [
-	{ type:'flash', src:'/static/player.swf', config: { provider:'/static/HLSProvider5.swf', file:'/file/video/test.m3u8' } },
-	{ type:'html5', config: { file:'/file/video/test.m3u8' } }
-	]});
-}
+$(document).ready(function(){
+	$.getJSON("/query/livevideo.json", function(data){
+        if(data.length > 0){
+        	for(var i=0;i<data.length;i++){
+                $("#roomsel").append("<option value='"+data[i]+"'>"+data[i]+"</option>");
+                
+            }  
+        	player(data[0]);
+        }
+    });
+	$('#roomsel').change(function(){
+		player($(this).val());
+	});
+});
 </script>
 </div>
 </body></html>

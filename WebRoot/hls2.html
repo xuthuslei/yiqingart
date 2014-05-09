@@ -1,54 +1,61 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<title>hls</title>
-<meta name="Generator" content="EditPlus">
-<meta name="Author" content="">
-<meta name="Keywords" content="">
-<meta name="Description" content="">
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta http-equiv="Content-Type" content="text/html; charset=GBK" />
+<!DOCTYPE html>
+<html><head><title>瑙嗛鐩存挱</title>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
 </head>
+<div class='fix'>閫夋嫨鎴块棿:<select id="roomsel" ></select></div>
+<body style="color: Black; background-color: White;" link="Blue" vlink="Purple">
 
-<body>
-<div id="livevideo">
-<!-- <object width="320" height="240"> -->
-<!--     <param name="movie" value="/static/hlsplayer.swf"></param -->
-<!--     <param name="flashvars" value="src=http%3A%2F%2F127.0.0.1:8080%2Ffile%2Fvideo%2Ftest.m3u8&autoPlay=true"></param> -->
-<!--     <param name="allowFullScreen" value="true"></param>  -->
-<!--     <param name="allowscriptaccess" value="always"></param> -->
-<!--     <param name="wmode" value="direct"></param> -->
-<!--     <embed src="/static/hlsplayer.swf" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" wmode="direct" width="320" height="240" flashvars="src=http%3A%2F%2F127.0.0.1:8080%2Ffile%2Fvideo%2Ftest.m3u8&autoPlay=true"></embed> -->
-<!-- </object>   -->
-</div>
+
+<div style="width: 640px; height: 480px;" id="player"></div>
+
+<script type="text/javascript" src="/static/jwplayer.js"></script>
+
+
 <script type="text/javascript">
 function ismoblie(){
-	var system ={
-		win : false,
-		mac : false,
-		xll : false
-	};
-	//检测平台
-	var p = navigator.platform;
-	system.win = p.indexOf("Win") == 0;
-	system.mac = p.indexOf("Mac") == 0;
-	system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
-	//跳转语句
-	if(system.win||system.mac||system.xll){
-		return false;
-	}else{
-	    return true;
+    var system ={
+        win : false,
+        mac : false,
+        xll : false
+    };
+    //妫�娴嬪钩鍙�
+    var p = navigator.platform;
+    system.win = p.indexOf("Win") == 0;
+    system.mac = p.indexOf("Mac") == 0;
+    system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+    //璺宠浆璇彞
+    if(system.win||system.mac||system.xll){
+        return false;
+    }else{
+        return true;
+    }
+}
+function player(room){
+	if(ismoblie()){
+	    str = '<video tabindex="0" height="240" width="320" controls="controls" autoplay ><source src="/file/record'+room+'"></video>';
+	    document.getElementById("player").innerHTML=str;
+	}
+	else{
+		jwplayer("player").setup({
+			hls_debug : false,
+			hls_debug2 : false,
+			hls_lowbufferlength : 5,    
+			hls_minbufferlength : 30,
+			hls_maxbufferlength : 60,	
+		width: 640,height: 480,
+		skin: "/static/newtubedark.zip",
+		plugins: { '/static/qualitymonitor.swf' : {} },
+		modes: [
+		{ type:'flash', src:'/static/player.swf', config: { provider:'/static/HLSProvider5.swf', file:'/file/record'+room } },
+		{ type:'html5', config: { file:'/file/video'+room } }
+		]});
 	}
 }
-if(ismoblie()){
-	str = '<video tabindex="0" height="480" width="640" controls="controls" autoplay="autoplay"><source src="/file/video/test.m3u8"></video>';
-	document.getElementById("livevideo").innerHTML=str;
-}
-else{
-	str = "<object width=\"640\" height=\"480\"><param name=\"movie\" value=\"/static/hlsplayer.swf\"></param<param name=\"flashvars\" value=\"src=http%3A%2F%2F"+document.domain+"%2Ffile%2Fvideo%2Ftest.m3u8&autoPlay=true\"></param>    <param name=\"allowFullScreen\" value=\"true\"></param> <param name=\"allowscriptaccess\" value=\"always\"></param>    <param name=\"wmode\" value=\"direct\"></param>    <embed src=\"/static/hlsplayer.swf\" type=\"application/x-shockwave-flash\" allowscriptaccess=\"always\" allowfullscreen=\"true\" wmode=\"direct\" width=\"640\" height=\"480\" flashvars=\"src=http%3A%2F%2F"+document.domain+"%2Ffile%2Fvideo%2Ftest.m3u8&autoPlay=true\"></embed></object>";
-	document.getElementById("livevideo").innerHTML=str;
-}
+$(document).ready(function(){
+	player("/2014-05-10/room1/live.m3u8");
+});
 </script>
-
-</body>
-</html>
+</div>
+</body></html>
