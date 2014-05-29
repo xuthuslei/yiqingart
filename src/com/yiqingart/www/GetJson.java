@@ -45,7 +45,7 @@ public class GetJson extends HttpServlet {
 	private Logger logger = Logger.getLogger("GetJson");
 
 	public enum Method {
-		HELLO,ACCESS_TOKEN, NEW_PIC_LIST, ROOM_LIST, ROOM_NEWEST_PIC, ROOM_DAY_LIST, ROOM_DAY_PIC_LIST, WORK_GROUP_LIST, PHONE_HEARTBEAT, ADMIN_DATA , NETDISK, LIVEVIDEO, RECORDVIDEO, NOVALUE;
+		HELLO,ACCESS_TOKEN, NEW_PIC_LIST, ROOM_LIST, ROOM_NEWEST_PIC, ROOM_DAY_LIST, ROOM_DAY_PIC_LIST, WORK_GROUP_LIST, PHONE_HEARTBEAT, ADMIN_DATA , NETDISK, LIVEVIDEO, NOVALUE;
 		public static Method toMethod(String str) {
 			try {
 				return valueOf(str);
@@ -133,9 +133,7 @@ public class GetJson extends HttpServlet {
 			break;
 		case LIVEVIDEO:
 		    jsonString = getLiveVideo();
-		case RECORDVIDEO:
-		    jsonString = getRecordVideo();
-		    break;
+		
 		default:
 			break;
 		}
@@ -164,20 +162,33 @@ public class GetJson extends HttpServlet {
 	}
 
 	private String  getLiveVideo() {
+	     JSONObject jsonResult = new JSONObject();
         FileCache filecache = FileCache.getInstance();
         String[] list = filecache.getM3U8List();
-        if(list == null){
-            return "[]";
+
+        JSONArray jsonLive = new JSONArray();
+        if(list != null){
+            
+            for(String key: list){
+                jsonLive.put(key);
+            }
         }
-        JSONArray jsonResult = new JSONArray();
-        for(String key: list){
-            jsonResult.put(key);
-        }
+       
+        jsonResult.put("live", jsonLive);
+        jsonResult.put("record", getRecordVideoJson());
         
         return jsonResult.toString();
     }
-	private String  getRecordVideo() {
-	    String sql = "SELECT DISTINCT date, room FROM `livevideo` order by date, room";
+	private JSONArray  getRecordVideoJson() {
+	    BaeCache baeCache = Common.getBaeCache();
+	    String value = (String)baeCache.get("record_list");
+        
+        if (value != null) {
+            JSONArray json = new JSONArray(value);
+            return json;
+        }
+        
+	    String sql = "SELECT DISTINCT date, room FROM `livevideo` order by date desc, room";
 
         logger.log(Level.INFO, "sql:"+sql);
         Connection connection = null;
@@ -188,14 +199,38 @@ public class GetJson extends HttpServlet {
             connection = Common.getConnection();
             stmt = connection.createStatement();
             rs = stmt.executeQuery(sql);
-            JSONObject jsonResult = new JSONObject();
-            
-            jsonResult.put("list", Common.resultSetToJson(rs));
-            return jsonResult.toString();
+            JSONArray jsonDates = new JSONArray();
+            JSONArray jsonRooms = new JSONArray();
+            String lastDay = null;
+            while(rs.next()){
+                String date = rs.getDate("date").toString();
+                String room = rs.getNString("room");
+                if((lastDay == null)||(lastDay.equals(date))){
+                    jsonRooms.put(room);
+                    lastDay = date;
+                    continue;
+                }
+                
+                JSONObject jsonDay = new JSONObject() ;
+                jsonDay.put("date", lastDay);
+                jsonDay.put("room", jsonRooms);
+                jsonDates.put(jsonDay);
+                lastDay = date;
+                jsonRooms = new JSONArray();
+                jsonRooms.put(room);
+            }
+            if(lastDay != null){
+                JSONObject jsonDay = new JSONObject() ;
+                jsonDay.put("date", lastDay);
+                jsonDay.put("room", jsonRooms);
+                jsonDates.put(jsonDay);                
+            }
+            baeCache.add("record_list", jsonDates.toString(), 60);
+            return jsonDates;
         } catch (Exception e) {
             // 异常处理逻辑
             logger.log(Level.SEVERE, "error:", e);
-            return "";
+            return null;
         } finally {
             try {
                 if (connection != null) {
@@ -203,7 +238,7 @@ public class GetJson extends HttpServlet {
                 }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "error:", e);
-                return "";
+                return null;
             }
         }
     }

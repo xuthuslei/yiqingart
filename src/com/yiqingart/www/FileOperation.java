@@ -418,6 +418,10 @@ public class FileOperation extends HttpServlet {
 	private void insert_video_record(String filename, int duration){
 	    String[] list = filename.toString().split("/");
 	    
+	    if(duration < 1){
+	        return;
+	    }
+	    
 	    Connection connection = null;
         try {
             connection = Common.getConnection();
@@ -434,7 +438,7 @@ public class FileOperation extends HttpServlet {
             return ;
         } catch (Exception e) {
             // 异常处理逻辑
-            logger.log(Level.SEVERE, "error:", e);
+            logger.log(Level.SEVERE, "error "+filename+":", e);
             return ;
         } finally {
             try {

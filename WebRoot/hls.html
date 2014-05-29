@@ -1,40 +1,59 @@
 <!DOCTYPE html>
-<html><head><title>视频直播</title>
-<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-<meta content="utf-8" http-equiv="encoding">
+<html><head><title>ʵʱ��Ƶ</title>
+<meta content="text/html;charset=gbk" http-equiv="Content-Type">
+<meta http-equiv="Content-Type" content="text/html; charset=GBK" />
 <script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
 </head>
-<div class='fix'>选择房间:<select id="roomsel" ></select></div>
+<div id="player"></div>
+<div class='fix'>ѡ����Ƶ:<select id="datesel" ></select><select id="roomsel" ></select></div>
 <body style="color: Black; background-color: White;" link="Blue" vlink="Purple">
 
 
-<div style="width: 640px; height: 480px;" id="player"></div>
+
 
 <script type="text/javascript" src="/static/jwplayer.js"></script>
 
 
 <script type="text/javascript">
+var video_list;
+var isFirst = 1;
+function loadStream(url) {
+	if( isFirst == 1){
+		player(url)
+	}
+	else{
+		if(ismoblie()){
+			$("#hlsplayer").attr("src",url);
+		}
+		else{
+			jwplayer("player").load({file: url,provider: 'HLSProvider5.swf'});
+		    //jwplayer("player").play();
+		}
+	}
+	isFirst = 0;
+	return false;
+}
 function ismoblie(){
     var system ={
         win : false,
         mac : false,
         xll : false
     };
-    //检测平台
+    
     var p = navigator.platform;
     system.win = p.indexOf("Win") == 0;
     system.mac = p.indexOf("Mac") == 0;
     system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
-    //跳转语句
+    
     if(system.win||system.mac||system.xll){
         return false;
     }else{
         return true;
     }
 }
-function player(room){
+function player(url){
 	if(ismoblie()){
-	    str = '<video tabindex="0" height="240" width="320" controls="controls" autoplay ><source src="/file/video'+room+'"></video>';
+	    str = '<video id="hlsplayer" tabindex="0" height="240" width="320" controls="controls" src="'+url+'"></video>';
 	    document.getElementById("player").innerHTML=str;
 	}
 	else{
@@ -48,25 +67,69 @@ function player(room){
 		skin: "/static/newtubedark.zip",
 		plugins: { '/static/qualitymonitor.swf' : {} },
 		modes: [
-		{ type:'flash', src:'/static/player.swf', config: { provider:'/static/HLSProvider5.swf', file:'/file/video'+room } },
-		{ type:'html5', config: { file:'/file/video'+room } }
+		{ type:'flash', src:'/static/player.swf', config: { provider:'/static/HLSProvider5.swf', file:url } },
+		{ type:'html5', config: { file:url } }
 		]});
 	}
 }
-$(document).ready(function(){
+function changeurl() {
+	var curdate = $("#datesel").val();
+	var curroom = $("#roomsel").val();
+	if( curdate == "day_live"){
+		loadStream("/file/video"+curroom);
+	}
+	else{
+		loadStream("/file/record/"+curdate+"/"+curroom+"/live.m3u8");
+	}
+}
+function update() {
 	$.getJSON("/query/livevideo.json", function(data){
-        if(data.length > 0){
-        	for(var i=0;i<data.length;i++){
-                $("#roomsel").append("<option value='"+data[i]+"'>"+data[i]+"</option>");
-                
-            }  
-        	player(data[0]);
+        video_list = data;
+        $("#datesel").empty();
+        $("#roomsel").empty();
+        if(data.live.length > 0){
+       		$("#datesel").append("<option value='day_live'>ʵʱ��Ƶ</option>");
+       		for(var i=0;i<data.live.length;i++){
+                $("#roomsel").append("<option value='"+data.live[i]+"'>"+data.live[i].split("/",2)[1]+"</option>")
+            }
         }
+        
+        if(data.record.length > 0){
+        	for(var i=0;i<data.record.length;i++){
+        		$("#datesel").append("<option value='"+data.record[i].date+"'>"+data.record[i].date+"</option>");        		
+        	}
+        	if(data.live.length == 0){
+                for(var i=0;i<data.record[0].room.length;i++){
+                    $("#roomsel").append("<option value='"+data.record[0].room[i]+"'>"+data.record[0].room[i]+"</option>")
+                }
+            }
+        }
+        changeurl();
     });
+}
+$(document).ready(function(){
+	update();
+	$('#datesel').change(function(){
+		$("#roomsel").empty();
+		var curdate = $("#datesel").val();
+		if(curdate == "day_live"){
+			for(var i=0;i<video_list.live.length;i++){
+                $("#roomsel").append("<option value='"+video_list.live[i]+"'>"+video_list.live[i].split("/",2)[1]+"</option>")
+            }
+		}
+		for(var i=0;i<video_list.record.length;i++){
+			if(video_list.record[i].date != curdate ){
+				continue;
+			}
+			for(var j=0;j<video_list.record[i].room.length;j++){
+                $("#roomsel").append("<option value='"+video_list.record[i].room[j]+"'>"+video_list.record[i].room[j]+"</option>")
+            }           
+        }
+		changeurl();
+	});
 	$('#roomsel').change(function(){
-		player($(this).val());
+		changeurl();
 	});
 });
 </script>
-</div>
 </body></html>

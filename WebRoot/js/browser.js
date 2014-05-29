@@ -33,7 +33,7 @@ function updateimg() {
 	isFirst = 0;
 	$.getJSON("/query/livevideo.json", function(data){
 		$("#livevideo").empty();
-		if(data.length > 0){
+		if(data.live.length > 0){
 			$("#livevideo").append("<a href='/hls.html'><span style='background-color:#FF0000;'>当前有直播，点击观看</span></a>");
 		}
 	});

