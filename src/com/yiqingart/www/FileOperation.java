@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,8 +47,10 @@ public class FileOperation extends HttpServlet {
 	private static final long serialVersionUID = 8826861146379330737L;
 	private Logger logger = Logger.getLogger("FileOperation");
 
+	static private ExecutorService executor = Executors.newFixedThreadPool(10);
+	
 	public enum Method {
-		THUMBNAIL, PIC, VIDEO, RECORD, NOVALUE;
+		THUMBNAIL, PIC, VIDEO, RECORD, MONGODB, LOCAL, NOVALUE;
 		public static Method toMethod(String str) {
 			try {
 				return valueOf(str);
@@ -77,6 +81,12 @@ public class FileOperation extends HttpServlet {
 		case RECORD:
 		    file_get_record( req, resp);
 		    break;
+		case MONGODB:
+		    file_get_mongodb( req, resp);
+		    break;
+		case LOCAL:
+		    file_get_local( req, resp);
+            break;
 		default:
 			PrintWriter pw = resp.getWriter();
 			pw.write("wrong");
@@ -97,6 +107,12 @@ public class FileOperation extends HttpServlet {
 		case VIDEO:
 			file_put_video( req, resp);
 			break;
+		case MONGODB:
+            file_put_mongodb( req, resp);
+            break;	
+		case LOCAL:
+            file_put_local( req, resp);
+            break;    
 		default:
 			PrintWriter pw = resp.getWriter();
 			pw.write("wrong");
@@ -163,19 +179,26 @@ public class FileOperation extends HttpServlet {
 				o.close();
 				return;
 			}
+			
 			Map<String, String> urlparams = new HashMap<String, String>();
-			urlparams.put("method", "generate");
-			urlparams.put("access_token", access_token);
-			urlparams.put("path", filename);	
-			urlparams.put("quality", "100");	
-			urlparams.put("width", "1600");	
-			urlparams.put("height", "1200");	
-				
-			String url = "https://pcs.baidu.com/rest/2.0/pcs/thumbnail?" + HttpUtil.buildQuery(urlparams, "UTF-8");
-			
-			
-			URL connect = new URL(url.toString());
-			URLConnection connection = connect.openConnection();
+            
+			urlparams.put("method", "download");
+            urlparams.put("access_token", access_token);
+            urlparams.put("path", filename);    
+                
+            String url = "https://d.pcs.baidu.com/rest/2.0/pcs/file?" + HttpUtil.buildQuery(urlparams, "UTF-8");
+            
+            URL connect = new URL(url.toString());
+            URLConnection connection = connect.openConnection();
+            
+            try {
+                connection = reload(connection);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                logger.log(Level.SEVERE, "error:", e);
+                return;
+            }
+            
 			InputStream is = connection.getInputStream();
 			byte[] buf = new byte[1024]; // 32k buffer
 			value =new ArrayList<byte[]>();
@@ -199,7 +222,7 @@ public class FileOperation extends HttpServlet {
 		} catch (Exception e) {
 			// 异常处理逻辑
 			logger.log(Level.SEVERE, "error:", e);
-			return ;
+			return;
 		}
 	}
 	
@@ -249,7 +272,7 @@ public class FileOperation extends HttpServlet {
 				urlparams.put("method", "upload");
 				urlparams.put("access_token", accessToken);
 				urlparams.put("path", filename);	
-				String url = "https://c.pcs.baidu.com/rest/2.0/pcs/file?"+HttpUtil.buildQuery(urlparams, "UTF-8");
+				String url = "https://pcs.baidu.com/rest/2.0/pcs/file?"+HttpUtil.buildQuery(urlparams, "UTF-8");
 				urlparams.clear();
 				params.put("file", item.get());
 				
@@ -479,8 +502,29 @@ public class FileOperation extends HttpServlet {
 		if(formate.equalsIgnoreCase("m3u8")){
 		    filecache.setM3U8(filename, value, 60000l);
         }
+		else if(formate.equalsIgnoreCase("3gp")){
+		    FileOutputStream outSTr = null; 
+		    BufferedOutputStream Buff=null;   
+		    logger.log(Level.INFO, "write :"+filename);
+		    try {  
+		        outSTr = new FileOutputStream(new File("e:/test/"+filename));   
+	            Buff=new BufferedOutputStream(outSTr);   
+
+	            
+	            for (int i = 0; i < value.size(); i++) {   
+	                byte data[] = value.get(i);
+	                Buff.write(data);
+	            }   
+	            Buff.flush();   
+	            Buff.close();   
+		    }
+		    finally {             
+	            Buff.close();  
+	            outSTr.close();   
+	        }   
+		}
         else{
-            filecache.setVideo(filename, value, 120000l);
+            filecache.setVideo(filename, value, 1200000l);
             String accessToken = Common.getAccessToken(null);
             insert_video_record(filename, req.getIntHeader("x-hls-duration"));         
             
@@ -489,8 +533,10 @@ public class FileOperation extends HttpServlet {
             
             urlparams.put("method", "upload");
             urlparams.put("access_token", accessToken);
-            urlparams.put("path", "/apps/yqart/live/"+Common.getDay()+filename);    
-            String url = "https://c.pcs.baidu.com/rest/2.0/pcs/file?"+HttpUtil.buildQuery(urlparams, "UTF-8");
+            urlparams.put("path", "/apps/yiqingart/live/"+Common.getDay()+filename);    
+            //String url = "https://c.pcs.baidu.com/rest/2.0/pcs/file?"+HttpUtil.buildQuery(urlparams, "UTF-8");
+            String url = "https://pcs.baidu.com/rest/2.0/pcs/file?"+HttpUtil.buildQuery(urlparams, "UTF-8");
+            logger.log(Level.INFO, "url:"+url);
             urlparams.clear();
             
             params.put("file", value);
@@ -504,6 +550,216 @@ public class FileOperation extends HttpServlet {
             }
         }		
 	}
+	
+	private void file_put_mongodb(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        // 在解析请求之前先判断请求类型是否为文件上传类型
+	    Map<String, String> params = new HashMap<String, String>();
+        String method = req.getMethod();
+        String filename = URLDecoder.decode(req.getRequestURI().substring("/file/mongodb".length()), "UTF-8");
+        String[] list = filename.toString().split("/");
+        logger.log(Level.INFO, "filename:" + filename + " method:" + method);
+        String formate = filename.substring(filename.lastIndexOf('.')+1);
+        
+        int duration = req.getIntHeader("x-hls-duration");
+        if( duration > 0)
+        {
+            params.put("duration", ""+duration);
+        }
+        params.put("room", list[0]);
+        params.put("day", Common.getDay());
+        
+        MongodbOpt mongo = MongodbOpt.getInstance();
+        
+        if(mongo == null)
+        {
+            logger.log(Level.SEVERE, "MongodbOpt.getInstance() null");
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        InputStream is = req.getInputStream();
+        
+        if(!mongo.save_file("/" + Common.getDay() + filename, is, params))
+        {
+            logger.log(Level.SEVERE, "mongo.save_file "+filename+" error");
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }    
+    }
+	private void file_get_mongodb(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        // 在解析请求之前先判断请求类型是否为文件上传类型
+        String method = req.getMethod();
+        String filename = URLDecoder.decode(req.getRequestURI().substring("/file/mongodb".length()), "UTF-8");
+        String[] list = filename.toString().split("/");
+        logger.log(Level.INFO, "filename:" + filename + " method:" + method);
+        String formate = filename.substring(filename.lastIndexOf('.')+1);
+        
+        if(formate.equalsIgnoreCase("ts")){
+            resp.setContentType("video/MP2T");
+            resp.setDateHeader("Expires",System.currentTimeMillis() + 3600*1000);
+        }
+        else if(formate.equalsIgnoreCase("m3u8")){
+            resp.setContentType("application/x-mpegURL");
+            resp.setDateHeader("Expires",System.currentTimeMillis() + 5*1000);
+        }
+        else
+        {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        
+        String[] list2 = list[0].split("-");
+        if(list2.length<3)
+        {
+            filename = "/" + Common.getDay() + filename;
+        }
+         
+        MongodbOpt mongo = MongodbOpt.getInstance();
+        
+        if(mongo == null)
+        {
+            logger.log(Level.SEVERE, "MongodbOpt.getInstance() null");
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        OutputStream os = resp.getOutputStream();
+        
+        if(!mongo.get_file(filename, os))
+        {
+            logger.log(Level.SEVERE, "mongo.get_file "+filename+" error");
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }    
+    }
+	private void insert_video_local(String filename, int duration){
+        String[] list = filename.toString().split("/");
+        
+        if(duration < 1){
+            return;
+        }
+        
+        Connection connection = null;
+        try {
+            connection = Common.getConnection();
+            
+            String sql = "insert into livevideo( date, room, time, filename, duration ) values (CURDATE(),?,CURTIME(),?,?)";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            
+            ps.setNString(1, list[1]);
+            ps.setNString(2, list[2]);
+            ps.setInt(3, duration);
+            
+            ps.executeUpdate();
+            
+            return ;
+        } catch (Exception e) {
+            // 异常处理逻辑
+            logger.log(Level.SEVERE, "error "+filename+":", e);
+            return ;
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "error:", e);
+                return ;
+            }
+        }
+    }
+	private void file_put_local(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        // 在解析请求之前先判断请求类型是否为文件上传类型
+        Map<String, String> params = new HashMap<String, String>();
+        String method = req.getMethod();
+        String filename = URLDecoder.decode(req.getRequestURI().substring("/file/local".length()), "UTF-8");
+        String[] list = filename.toString().split("/");
+        logger.log(Level.INFO, "filename:" + filename + " method:" + method);
+        String formate = filename.substring(filename.lastIndexOf('.')+1);
+        
+        int duration = req.getIntHeader("x-hls-duration");
+        if( duration > 0)
+        {
+            params.put("duration", ""+duration);
+        }
+        params.put("room", list[1]);
+        params.put("day", Common.getDay());
+        
+        filename = "/live/" + Common.getDay() + filename;
+        
+        InputStream is = null;
+        try{
+            is = req.getInputStream();
+            if(!LocalFS.save_file("video", filename, is, params, formate.equalsIgnoreCase("ts"))){
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }                
+        }
+        catch  (Exception e) {
+            logger.log(Level.SEVERE, "error:", e);
+            return ;
+        }
+        finally{
+            if(is!=null)
+            {
+                is.close();
+                is = null;
+            }
+        }
+    }
+    private void file_get_local(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        // 在解析请求之前先判断请求类型是否为文件上传类型
+        String method = req.getMethod();
+        String filename = URLDecoder.decode(req.getRequestURI().substring("/file/local".length()), "UTF-8");
+        String[] list = filename.toString().split("/");
+        logger.log(Level.INFO, "filename:" + filename + " method:" + method);
+        String formate = filename.substring(filename.lastIndexOf('.')+1);
+        
+        if(formate.equalsIgnoreCase("ts")){
+            resp.setContentType("video/MP2T");
+            resp.setDateHeader("Expires",System.currentTimeMillis() + 3600*1000);
+        }
+        else if(formate.equalsIgnoreCase("m3u8")){
+            resp.setContentType("application/x-mpegURL");
+            resp.setDateHeader("Expires",System.currentTimeMillis() + 5*1000);
+        }
+        else
+        {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        
+        String[] list2 = list[1].split("-");
+        if(list2.length<3)
+        {
+            filename = Common.getDay() + filename;
+        }
+        
+        filename = "/live/" + filename;
+                
+        OutputStream os = null;
+        try{
+            os = resp.getOutputStream();
+            if(!LocalFS.get_file(filename, os, formate.equalsIgnoreCase("ts"), formate.equalsIgnoreCase("ts")))
+            {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+        }
+        catch  (Exception e) {
+            logger.log(Level.SEVERE, "error:", e);
+            return ;
+        }
+        finally{
+            if(os!=null)
+            {
+                os.close();
+                os = null;
+            }
+        }       
+    }
 	private void file_post_video(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
 		// 在解析请求之前先判断请求类型是否为文件上传类型
@@ -572,7 +828,7 @@ public class FileOperation extends HttpServlet {
             Map<String, String> urlparams = new HashMap<String, String>();
             urlparams.put("method", "download");
             urlparams.put("access_token", access_token);
-            urlparams.put("path", "/apps/yqart/live"+filename);    
+            urlparams.put("path", "/apps/yiqingart/live"+filename);    
                 
             String url = "https://d.pcs.baidu.com/rest/2.0/pcs/file?" + HttpUtil.buildQuery(urlparams, "UTF-8");
             OutputStream o = resp.getOutputStream();
@@ -604,6 +860,7 @@ public class FileOperation extends HttpServlet {
                 o.write(buf, 0, nRead);
             }
             
+            is.close();
             o.flush();
             o.close();
         }

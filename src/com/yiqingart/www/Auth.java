@@ -138,7 +138,7 @@ public class Auth extends HttpServlet {
 		resp.setContentType("text/html;charset=utf-8");
 		
         try {
-           	String url = "https://openapi.baidu.com/oauth/2.0/authorize?response_type=code&scope=netdisk&client_id="+Common.BD_API_KEY+"&confirm_login=1&redirect_uri=http%3A%2F%2Flivepic2.yiqingart.com%2Fauth%2fbaidu_oauth";
+           	String url = "https://openapi.baidu.com/oauth/2.0/authorize?response_type=code&scope=netdisk&client_id="+Common.BD_API_KEY+"&confirm_login=1&redirect_uri=http%3A%2F%2Fyiqingart.duapp.com%2Fauth%2fbaidu_oauth";
         	resp.sendRedirect(url);
         } catch (Exception e) {
         	logger.log(Level.SEVERE, "error:", e);
@@ -162,7 +162,7 @@ public class Auth extends HttpServlet {
 			params.put("code", code);
 			params.put("client_id", Common.BD_API_KEY);
 			params.put("client_secret", Common.BD_SECRET_KEY);
-			params.put("redirect_uri", "http://livepic2.yiqingart.com/auth/baidu_oauth");
+			params.put("redirect_uri", "http://yiqingart.duapp.com/auth/baidu_oauth");
 			
 			String url = "https://openapi.baidu.com/oauth/2.0/token";
 			String response = HttpUtil.doPost(url, params);

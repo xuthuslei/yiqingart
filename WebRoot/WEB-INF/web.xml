@@ -13,10 +13,22 @@
      <servlet-name>ShellServlet</servlet-name>
      <servlet-class>com.jsos.shell.ShellServlet</servlet-class>
     </servlet> 
-    <servlet-mapping>
+<servlet-mapping>
     <servlet-name>ShellServlet</servlet-name>
     <url-pattern>/ShellServlet</url-pattern>
-   </servlet-mapping> 
+</servlet-mapping>
+<servlet>
+     <servlet-name>FileManager</servlet-name>
+     <servlet-class>com.jsos.fmanager.FileManager</servlet-class>
+     <init-param>
+      <param-name>config</param-name>
+      <param-value>/home/bae/app/fmconf</param-value>
+     </init-param>
+</servlet> 
+<servlet-mapping>
+     <servlet-name>FileManager</servlet-name>
+     <url-pattern>/FileManager</url-pattern>
+    </servlet-mapping>     
 <servlet>
     <servlet-name>modify</servlet-name>
     <servlet-class>com.yiqingart.www.Modify</servlet-class>

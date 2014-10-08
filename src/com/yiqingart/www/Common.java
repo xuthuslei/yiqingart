@@ -1,5 +1,8 @@
 package com.yiqingart.www;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,11 +28,14 @@ import com.baidu.bae.api.memcache.BaeCache;
 public class Common {
 	final public static String QQ_CLENT_ID = "100572767"; 
 	final public static String QQ_CLENT_SECRET = "71e30056cf39ee51c7ec8fd5b44d1602";
-	final public static String BD_API_KEY = "5TL8PlqCuFnliMfsIlEyDXlz";
-	final public static String BD_SECRET_KEY = "wSOkEjPZDGKG1GyLjCd76soBKXqYgIji";
+	final public static String BD_API_KEY = "UhvHvCrsb1OIoClSdQ61OQGZ";
+	final public static String BD_SECRET_KEY = "KgRUZ7M7aaGR9bpwRarGNpX9ITxVwlP2";
 	final public static String BAE_API_KEY = "UhvHvCrsb1OIoClSdQ61OQGZ";
 	final public static String BAE_SECRET_KEY = "KgRUZ7M7aaGR9bpwRarGNpX9ITxVwlP2";
 	final private static Logger logger = Logger.getLogger("Insert");
+	final public static String BAE_MONGODB_DB = "MvtEDmWnDjCqieNCBwze";
+	final public static String BAE_MONGODB_HOST = "mongo.duapp.com";
+	final public static String BAE_MONGODB_PORT = "8908";
 	public static Connection getConnection() throws ClassNotFoundException, SQLException{
 		if((System.getProperty("baejavasdk.local")!=null)&&(System.getProperty("baejavasdk.local").equalsIgnoreCase("true"))){
     		logger.log(Level.INFO, "is local");
@@ -116,6 +122,16 @@ public class Common {
         int mDay = c.get(Calendar.DAY_OF_MONTH);// 获取当前月份的日期号码
         String target = String.format("%04d-%02d-%02d", mYear, mMonth, mDay);
         return target;
+    }
+    public static URLConnection reload(URLConnection uc) throws Exception {
+
+        HttpURLConnection huc = (HttpURLConnection) uc;
+        
+        if (huc.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP 
+                || huc.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM)// 302, 301
+            return reload(new URL(huc.getHeaderField("location")).openConnection());
+        
+        return uc;
     }
     public static String getAccessToken(HttpSession session) {
 

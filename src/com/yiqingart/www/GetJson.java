@@ -562,7 +562,7 @@ public class GetJson extends HttpServlet {
 			BaiduApiClient baidu = new BaiduApiClient(accessToken);
 
 			params.put("method", "list");
-			params.put("path", "/apps/yqart");
+			params.put("path", "/apps/yiqingart");
 
 			response = baidu.request("https://pcs.baidu.com/rest/2.0/pcs/file",
 					params, BaiduApiClient.METHOD_GET);
