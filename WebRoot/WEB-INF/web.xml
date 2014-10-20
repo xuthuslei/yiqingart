@@ -10,6 +10,14 @@
     <url-pattern>/query/*</url-pattern>
 </servlet-mapping>
 <servlet>
+    <servlet-name>cron</servlet-name>
+    <servlet-class>com.yiqingart.www.Cron</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>cron</servlet-name>
+    <url-pattern>/cron/*</url-pattern>
+</servlet-mapping>
+<servlet>
      <servlet-name>ShellServlet</servlet-name>
      <servlet-class>com.jsos.shell.ShellServlet</servlet-class>
     </servlet> 

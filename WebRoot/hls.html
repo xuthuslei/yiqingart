@@ -76,14 +76,14 @@ function changeurl() {
 	var curdate = $("#datesel").val();
 	var curroom = $("#roomsel").val();
 	if( curdate == "day_live"){
-		loadStream("/file/video"+curroom);
+		loadStream("file/video"+curroom);
 	}
 	else{
-		loadStream("/file/record/"+curdate+"/"+curroom+"/live.m3u8");
+		loadStream("file/record/"+curdate+"/"+curroom+"/live.m3u8");
 	}
 }
 function update() {
-	$.getJSON("/query/livevideo.json", function(data){
+	$.getJSON("query/livevideo.json", function(data){
         video_list = data;
         $("#datesel").empty();
         $("#roomsel").empty();

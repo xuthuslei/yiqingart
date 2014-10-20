@@ -11,12 +11,14 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -25,11 +27,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
-import com.mongodb.gridfs.GridFS;
-import com.mongodb.gridfs.GridFSDBFile;
 
 public class LocalFS {
-    static private Logger logger = Logger.getLogger("LocalFS");
+    static private Logger logger = Logger.getLogger(LocalFS.class);
     static private ExecutorService executor = Executors.newFixedThreadPool(15);
     //static private MongoClient  mongoClient = null;
     
@@ -47,9 +47,14 @@ public class LocalFS {
             return mongoClient;
         }
         catch(Exception e) {
-            logger.log(Level.SEVERE, "save_file error:", e);
+            logger.log(Level.FATAL, "save_file error:", e);
             return null;
         }
+    }
+    public static byte[] subBytes(byte[] src, int begin, int count) {
+        byte[] bs = new byte[count];
+        for (int i=begin; i<begin+count; i++) bs[i-begin] = src[i];
+        return bs;
     }
     public static Boolean save_file(String collectionName, String filename, InputStream is, Map<String, String> parameters, Boolean toNetDisk )
     {
@@ -62,15 +67,32 @@ public class LocalFS {
             } 
             FileOutputStream os = new FileOutputStream(file); 
             
-            byte[] buf = new byte[32*1024]; // 32k buffer
-                
-            int nRead = 0;
+            byte[] buf = new byte[1024]; // 32k buffer
+            List<byte[]> value = new ArrayList<byte[]>();
+            
+            int nRead = 0, count = 0;
             while ((nRead = is.read(buf)) != -1) {
-                os.write(buf, 0, nRead);            
+                count += nRead;
+                os.write(buf, 0, nRead);   
+                if (nRead == 1024) {
+                    value.add(buf.clone());
+                } else {
+                    value.add(subBytes(buf, 0, nRead));
+                }
             }
             
             os.close();
             is.close();
+            
+            if(count == 0)
+            {
+                logger.log(Level.WARN, "save file "+filename+" for netdisk null");
+                file.delete();
+                return false;
+            }
+            
+            FileCache filecache = FileCache.getInstance();
+            filecache.setVideo(filename, value, 60000l);
             
             mc = getMongoClient();
         
@@ -101,7 +123,7 @@ public class LocalFS {
             return true;
          }
         catch (Exception e) {
-            logger.log(Level.SEVERE, "save_file error:", e);
+            logger.log(Level.FATAL, "save_file error:", e);
             return false;
         }
         finally{
@@ -121,7 +143,7 @@ public class LocalFS {
             urlparams.put("access_token", access_token);
             urlparams.put("path", "/apps/yiqingart"+filename);    
                 
-            String url = "https://d.pcs.baidu.com/rest/2.0/pcs/file?" + HttpUtil.buildQuery(urlparams, "UTF-8");
+            String url = "https://pcs.baidu.com/rest/2.0/pcs/file?" + HttpUtil.buildQuery(urlparams, "UTF-8");
               
             URL connect = new URL(url.toString());
             URLConnection connection = connect.openConnection();
@@ -129,19 +151,25 @@ public class LocalFS {
             connection = Common.reload(connection);
                     
             is = connection.getInputStream();
-            byte[] buf = new byte[32*1024]; // 32k buffer
+            byte[] buf = new byte[1024]; // 32k buffer
             
-            int nRead = 0;
+            int nRead = 0, count = 0;
             while( (nRead=is.read(buf)) != -1 ) {
-                           
+                count += nRead;        
                 os.write(buf, 0, nRead);
+            }
+            if(0==count)
+            {
+                logger.log(Level.WARN, "get file "+filename+" from netdisk null");
+                is.close();
+                return false;
             }
             
             is.close();
             return true;
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            logger.log(Level.SEVERE, "error:", e);
+            logger.log(Level.FATAL, "error:", e);
             return false;
         }finally{
             if(is != null) {
@@ -155,6 +183,19 @@ public class LocalFS {
         FileOutputStream localos = null;
         FileInputStream  is = null;
         try {
+            FileCache filecache = FileCache.getInstance();
+            List<byte[]> value = null;
+            
+            value = (List<byte[]>) filecache.getVideo(filename);
+            
+            if(value != null)
+            {
+                for (int i = 0; i < value.size(); i++) {
+                    byte data[] = value.get(i);
+                    os.write(data, 0, data.length);
+                }
+                return true;
+            }
             File file = new File("/home/bae" + filename); 
             if(file!=null&&!file.exists()){ 
                 //本地没有,从网盘下载
@@ -178,16 +219,25 @@ public class LocalFS {
             }
             
             is = new FileInputStream(file); 
-            byte[] buf = new byte[32*1024]; // 32k buffer
+            byte[] buf = new byte[1024]; // 32k buffer
             
-            int nRead = 0;
-            while( (nRead=is.read(buf)) != -1 ) {                           
+            int nRead = 0, count = 0;
+            while( (nRead=is.read(buf)) != -1 ) {  
+                count += nRead;
                 os.write(buf, 0, nRead);
+            }
+            
+            if(0==count)
+            {
+                logger.log(Level.WARN, "get file "+filename+" from local null");
+                
+                file.delete();
+                return false;
             }
             return true;
         }
         catch(Exception e) {
-            logger.log(Level.SEVERE, "get_file error:", e);
+            logger.log(Level.FATAL, "get_file error:", e);
             return false;
         }
         finally

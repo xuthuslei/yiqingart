@@ -49,7 +49,7 @@ public class Auth extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		String requestURL = req.getRequestURI();
+		String requestURL = req.getRequestURI().substring(req.getContextPath().length());
 		String[] inputParams = requestURL.toString().split("/");
 		String method = inputParams[2];
 		//HttpSession session = req.getSession(true);// 如果没有该session，则自动创建一个新的

@@ -43,7 +43,7 @@ public class Modify extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		String requestURL = req.getRequestURI();
+		String requestURL = req.getRequestURI().substring(req.getContextPath().length());
 		String jsonString = null;
 		String[] inputParams = requestURL.toString().split("/")[2]
 				.split("\\x2E");

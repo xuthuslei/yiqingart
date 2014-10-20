@@ -17,11 +17,11 @@ function updateimg() {
 		param.room = $(this).attr("room");
 		param.path_id = $(this).attr("id");
 		//_hmt.push(['_trackEvent', param.room.split("/",4)[3], param.room.split("/",4)[3] + '刷新']);
-		$.getJSON("/query/room_newest_pic.json", param, function(data){
+		$.getJSON("query/room_newest_pic.json", param, function(data){
 			if(	data.hasOwnProperty("path_id")){
 				$("#"+data.path_id).show();
 				$("#"+data.path_id).empty();
-				$("#"+data.path_id).append("<div class='close_box'>X</div><a onclick=\"_hmt.push(['_trackEvent', '" + param.room.split("/",4)[3] + "', '" + param.room.split("/",4)[3] + "/大图'])\" target='_blank' href='/file/pic"+data.path+"'> <img src='/file/thumbnail"+data.path+"' alt='"+data.path.split("/",6)[3]+"' width='320' height='240'>  </a><div class='desc'>"+data.path.split("/",6)[5]+"</div>");
+				$("#"+data.path_id).append("<div class='close_box'>X</div><a onclick=\"_hmt.push(['_trackEvent', '" + param.room.split("/",4)[3] + "', '" + param.room.split("/",4)[3] + "/大图'])\" target='_blank' href='file/pic"+data.path+"'> <img src='file/thumbnail"+data.path+"' alt='"+data.path.split("/",6)[3]+"' width='320' height='240'>  </a><div class='desc'>"+data.path.split("/",6)[5]+"</div>");
 			}
 			else{
 				if(isFirst == 1){
@@ -31,7 +31,7 @@ function updateimg() {
 		});
 	});
 	isFirst = 0;
-	$.getJSON("/query/livevideo.json", function(data){
+	$.getJSON("query/livevideo.json", function(data){
 		$("#livevideo").empty();
 		if(data.live.length > 0){
 			$("#livevideo").append("<a href='/hls.html'><span style='background-color:#FF0000;'>当前有直播，点击观看</span></a>");
@@ -41,7 +41,7 @@ function updateimg() {
 $(document).ready(function(){
 	$(".hisday").hide();
 	$(".hispage").hide();
-	$.getJSON("/query/room_list.json", function(data){
+	$.getJSON("query/room_list.json", function(data){
 		$("#roomsel").append("<option value='live_pic'>实时图片</option>");
 		for(var i=0;i<data.list.length;i++){
 			$("#roomsel").append("<option value='"+data.list[i].room+"'>"+data.list[i].room.split("/",4)[3]+"</option>");
@@ -64,7 +64,7 @@ $(document).ready(function(){
 			page = 0;
 			max_page = 0;
 			isFirst = 1;
-			$.getJSON("/query/room_list.json", function(data){
+			$.getJSON("query/room_list.json", function(data){
 				for(var i=0;i<data.list.length;i++){
 					$("#pic").append("<div class='img' id=" + data.list[i].path_id + " room='"+data.list[i].room+"' ></div>");
 					$("#"+data.list[i].path_id).hide();
@@ -80,7 +80,7 @@ $(document).ready(function(){
 			roompath.room = $(this).val();
 			clearInterval(clock);
 			
-			$.getJSON("/query/room_day_list.json", roompath, function(data){
+			$.getJSON("query/room_day_list.json", roompath, function(data){
 				$("#day").empty();
 				$("#pic").empty();
 				$(".pagelist").empty();
@@ -103,7 +103,7 @@ $(document).ready(function(){
 		
 		_hmt.push(['_trackEvent', '' + daypath.room_day.split("/",6)[3] , '' + daypath.room_day.split("/",6)[3] + '/' + daypath.room_day.split("/",6)[4]]);
 		
-		$.getJSON("/query/room_day_pic_list.json", daypath, function(data){
+		$.getJSON("query/room_day_pic_list.json", daypath, function(data){
 			if(data.list.length < 1){
 				return;
 			}
@@ -119,7 +119,7 @@ $(document).ready(function(){
 			}
 			
 			for(var i=0;i<(pic_list.list.length<20?pic_list.list.length:20);i++){  
-				$("#pic").append("<div class='img'><a target='_blank' href='/file/pic"+pic_list.list[i]+"'> <img src='/file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+				$("#pic").append("<div class='img'><a target='_blank' href='file/pic"+pic_list.list[i]+"'> <img src='file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 			}  
 		});
 	});
@@ -128,7 +128,7 @@ $(document).ready(function(){
 		$('.pagelist').val(page);
 		$("#pic").empty();
 		for(var i=page*20;i<(pic_list.list.length<(page*20+20)?pic_list.list.length:(page*20+20));i++){  
-			$("#pic").append("<div class='img'><a target='_blank' href='/file/pic"+pic_list.list[i]+"'> <img src='/file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+			$("#pic").append("<div class='img'><a target='_blank' href='file/pic"+pic_list.list[i]+"'> <img src='file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 		} 
 	});
 	$('.page').click(function(){
@@ -152,7 +152,7 @@ $(document).ready(function(){
 		$('.pagelist').val(page);
 		$("#pic").empty();
 		for(var i=page*20;i<(pic_list.list.length<(page*20+20)?pic_list.list.length:(page*20+20));i++){  
-			$("#pic").append("<div class='img'><a target='_blank' href='/file/pic"+pic_list.list[i]+"'> <img src='/file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
+			$("#pic").append("<div class='img'><a target='_blank' href='file/pic"+pic_list.list[i]+"'> <img src='file/thumbnail"+pic_list.list[i]+"' alt='"+pic_list.list[i].split("/",6)[5]+"' width='320' height='240'>  </a><div class='desc'>"+pic_list.list[i].split("/",6)[5]+"</div></div>");
 		}  
 		
 		return false;

@@ -1,11 +1,11 @@
 function update_table() {  
-	$.getJSON("/query/admin_data.json", function(data){
+	$.getJSON("query/admin_data.json", function(data){
 		update_group_list(data.work_group_config);
 		update_place_list(data.work_place_cfg);
 		//update_phone_cfg(data);
 		update_phone_state(data);
 	});
-	$.getJSON("/query/netdisk.json", function(data){
+	$.getJSON("query/netdisk.json", function(data){
 		$("#netdisk_expires").text(get_time_str(data.expires_in));
 		$("#netdisk_remain").text(Math.round((data.quota-data.used)/(1024*1024*1024))+"GB");
 	});
@@ -193,7 +193,7 @@ $(document).ready(function(){
 		var idx = $(this).parent().parent().attr("idx");
 		if( opt == "del"){
 			var params = {"workgroupid":idx};
-			$.getJSON("/delete/work_group.json", params, function(data){
+			$.getJSON("delete/work_group.json", params, function(data){
 				update_table();
 			});
 			return false;
@@ -230,13 +230,13 @@ $(document).ready(function(){
 			params.group_name = $("#"+groupid).children(".group_name").children().val();
 		
 			
-			$.getJSON("/modify/work_group.json", params, function(data){
+			$.getJSON("modify/work_group.json", params, function(data){
 				update_table();
 			});
 		}
 		else{
 			params.group_name = $("#"+groupid).children(".group_name").children().val();
-			$.getJSON("/insert/work_group.json", params, function(data){
+			$.getJSON("insert/work_group.json", params, function(data){
 				update_table();
 			});
 		}
@@ -253,7 +253,7 @@ $(document).ready(function(){
 		var idx = $(this).parent().parent().attr("idx");
 		if( opt == "del"){
 			var params = {"workplaceid":idx};
-			$.getJSON("/delete/WORK_PLACE.json", params, function(data){
+			$.getJSON("delete/WORK_PLACE.json", params, function(data){
 				update_table();
 			});
 			return false;
@@ -274,13 +274,13 @@ $(document).ready(function(){
 			
 			params.place_name = $("#"+placeid).find(".place_name").val();
 	
-			$.getJSON("/modify/WORK_PLACE.json", params, function(data){
+			$.getJSON("modify/WORK_PLACE.json", params, function(data){
 				update_table();
 			});
 		}
 		else{
 			params.place_name = $("#"+placeid).find(".place_name").val();
-			$.getJSON("/insert/WORK_PLACE.json", params, function(data){
+			$.getJSON("insert/WORK_PLACE.json", params, function(data){
 				update_table();
 			});
 		}
@@ -297,15 +297,15 @@ $(document).ready(function(){
 		var idx = $(this).parent().parent().attr("idx");
 		if( opt == "del"){
 			var params = {"phone_id":idx};
-			$.getJSON("/delete/PHONE_CFG.json", params, function(data){
-				$.getJSON("/delete/ACCESS_LOG.json", params, function(data){
+			$.getJSON("delete/PHONE_CFG.json", params, function(data){
+				$.getJSON("delete/ACCESS_LOG.json", params, function(data){
 					update_table();
 				});
 			});
 			return false;
 		}
 		if( opt == "reset"){
-			$.getJSON("/modify/PHONE_RESET.json",  function(data){
+			$.getJSON("modify/PHONE_RESET.json",  function(data){
 				update_table();
 			});
 			return false;
@@ -326,7 +326,7 @@ $(document).ready(function(){
 			params.workgroupid = $("#"+phoneid).find(".group_id").val();
 			params.phone_id = idx;
 	
-			$.getJSON("/modify/PHONE_CFG.json", params, function(data){
+			$.getJSON("modify/PHONE_CFG.json", params, function(data){
 				update_table();
 			});
 		}
@@ -334,7 +334,7 @@ $(document).ready(function(){
 			params.workplaceid = $("#"+phoneid).find(".place_id").val();
 			params.workgroupid = $("#"+phoneid).find(".group_id").val();
 			params.phone_id =  $("#"+phoneid).find(".phone_id").val();
-			$.getJSON("/insert/PHONE_CFG.json", params, function(data){
+			$.getJSON("insert/PHONE_CFG.json", params, function(data){
 				update_table();
 			});
 		}

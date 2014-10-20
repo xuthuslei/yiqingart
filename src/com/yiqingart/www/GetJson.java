@@ -10,11 +10,13 @@ import java.security.SecureRandom;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -23,6 +25,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -64,7 +67,8 @@ public class GetJson extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		String requestURL = req.getRequestURI();
+		String requestURL = req.getRequestURI().substring(req.getContextPath().length());
+		//logger.log(Level.INFO, "USER_ENV2:" + System.getenv("USER_ENV2") +"  BAE_API_KEY:" + System.getenv("BAE_API_KEY"));
 		String jsonString = null;
 		String[] inputParams = requestURL.toString().split("/")[2]
 				.split("\\x2E");
@@ -80,8 +84,39 @@ public class GetJson extends HttpServlet {
 		Method m = Method.toMethod(method.toUpperCase());
 		switch (m) {
 		case HELLO:
+		    PrintWriter pw = resp.getWriter();
 			cacheSecond = 0;
 			jsonString = "{\"result\":\"hello haha\"}";
+			Map<String, String> m1 = System.getenv();
+
+            for ( Iterator<String> it = m1.keySet().iterator(); it.hasNext(); )
+            {
+                   String key = (String ) it.next();
+                   String value = (String )  m1.get(key);
+                   pw.write(key +":" +value + "\r\n");
+
+            }
+
+            pw.write( "--------------------------------------\r\n" );
+
+            Properties p = System.getProperties();
+
+            for ( Iterator<Object> it = p.keySet().iterator(); it.hasNext(); )
+            {
+                   String key = (String ) it.next();
+                   String value = (String )  p.get(key);
+                   pw.write(key +":" +value+"\r\n");
+            }
+            pw.write( "--------------------------------------\r\n" );
+            ServletContext context = this.getServletContext();   
+            
+            for (Enumeration<String> e = context.getAttributeNames(); e.hasMoreElements();)
+            {
+                String key = e.nextElement();
+                pw.write(key +":" +context.getAttribute(key)+"\r\n");
+            }
+            pw.flush();
+            pw.close(); 
 			break;
 		case ACCESS_TOKEN:
 			cacheSecond = 30;
