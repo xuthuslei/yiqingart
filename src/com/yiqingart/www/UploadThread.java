@@ -14,11 +14,26 @@ public class UploadThread implements Runnable {
 
     private String localFilename;
     private String remoteFilename;
+    private Boolean deleteLater = false;
+    private List<byte[]> value = null;
     private Logger logger = Logger.getLogger("UploadThread");
     
     public UploadThread(String localFilename, String remoteFilename) {
         this.localFilename = localFilename;
         this.remoteFilename = remoteFilename;
+        this.deleteLater = false;
+    }
+    
+    public UploadThread(List<byte[]> value, String remoteFilename) {
+        this.localFilename = null;
+        this.value  = value;
+        this.remoteFilename = remoteFilename;
+        this.deleteLater = false;        
+    }
+    public UploadThread(String localFilename, String remoteFilename,Boolean deleteLater) {
+        this.localFilename = localFilename;
+        this.remoteFilename = remoteFilename;
+        this.deleteLater = deleteLater;
     }
     public static byte[] subBytes(byte[] src, int begin, int count) {
         byte[] bs = new byte[count];
@@ -28,34 +43,26 @@ public class UploadThread implements Runnable {
     @Override
     public void run() {
         // TODO Auto-generated method stub
+        File file = null;
         logger.log(Level.WARNING, "UploadThread file:"+ localFilename +" is runing");
-        File file = new File("/home/bae" + localFilename);
-        FileInputStream is;
-        byte[] buf = new byte[1024]; // 32k buffer
-        List<byte[]> value = new ArrayList<byte[]>();
-              
-        try {
-            if(file==null||!file.exists())
-            {           
-                logger.log(Level.SEVERE, "file:"+ localFilename +" not found!!");
+        if(value == null)
+        {
+            file = new File("/home/bae" + localFilename);
+            FileInputStream is;
+            value = new ArrayList<byte[]>();
+                  
+            try {
+                
+                is = new FileInputStream(file);
+                
+                value = Common.readIs(is);
+                
+                is.close();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                logger.log(Level.SEVERE, "error:", e);
                 return;
             }
-            is = new FileInputStream(file);
-            
-            int nRead = 0;
-            while ((nRead = is.read(buf)) != -1) {
-                if (nRead == 1024) {
-                    value.add(buf.clone());
-                } else {
-                    value.add(subBytes(buf, 0, nRead));
-                }
-            }
-            
-            is.close();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            logger.log(Level.SEVERE, "error:", e);
-            return;
         }
         
         int count = 0;
@@ -81,6 +88,10 @@ public class UploadThread implements Runnable {
             try {
                 String response = HttpUtil.uploadFile(url, params);
                 logger.log(Level.INFO, "response:"+response);
+                if(deleteLater&&file!=null)
+                {
+                    file.delete();
+                }
                 return;
             } catch (Exception e) {
                 // TODO Auto-generated catch block

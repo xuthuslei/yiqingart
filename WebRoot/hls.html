@@ -2,6 +2,7 @@
 <html><head><title>实时视频</title>
 <meta content="text/html;charset=gbk" http-equiv="Content-Type">
 <meta http-equiv="Content-Type" content="text/html; charset=GBK" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <script src="http://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
 </head>
 <div id="player"></div>
@@ -53,7 +54,7 @@ function ismoblie(){
 }
 function player(url){
 	if(ismoblie()){
-	    str = '<video id="hlsplayer" tabindex="0" height="240" width="320" controls="controls" src="'+url+'"></video>';
+	    str = '<video id="hlsplayer" tabindex="0" height="240" width="320"  controls="controls" src="'+url+'"></video>';
 	    document.getElementById("player").innerHTML=str;
 	}
 	else{

@@ -167,7 +167,7 @@ public class GetJson extends HttpServlet {
 			jsonString = getNetDiskJson(req);
 			break;
 		case LIVEVIDEO:
-		    jsonString = getLiveVideo();
+		    jsonString = getLiveVideo(req.getContextPath().length()>0);
 		
 		default:
 			break;
@@ -196,7 +196,7 @@ public class GetJson extends HttpServlet {
 		pw.close(); 
 	}
 
-	private String  getLiveVideo() {
+	private String  getLiveVideo(Boolean test) {
 	     JSONObject jsonResult = new JSONObject();
         FileCache filecache = FileCache.getInstance();
         String[] list = filecache.getM3U8List();
@@ -210,11 +210,11 @@ public class GetJson extends HttpServlet {
         }
        
         jsonResult.put("live", jsonLive);
-        jsonResult.put("record", getRecordVideoJson());
+        jsonResult.put("record", getRecordVideoJson(test));
         
         return jsonResult.toString();
     }
-	private JSONArray  getRecordVideoJson() {
+	private JSONArray  getRecordVideoJson(Boolean test) {
 	    BaeCache baeCache = Common.getBaeCache();
 	    String value = (String)baeCache.get("record_list");
         
@@ -223,7 +223,8 @@ public class GetJson extends HttpServlet {
             return json;
         }
         
-	    String sql = "SELECT DISTINCT date, room FROM `livevideo` order by date desc, room";
+        String table = test?"livevideo2":"livevideo";
+	    String sql = "SELECT DISTINCT date, room FROM `"+table+"` order by date desc, room";
 
         logger.log(Level.INFO, "sql:"+sql);
         Connection connection = null;

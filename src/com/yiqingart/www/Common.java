@@ -1,5 +1,8 @@
 package com.yiqingart.www;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -11,7 +14,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,6 +87,35 @@ public class Common {
 		return connection;
 	}
 	
+	 public static byte[] subBytes(byte[] src, int begin, int count) {
+	        byte[] bs = new byte[count];
+	        for (int i=begin; i<begin+count; i++) bs[i-begin] = src[i];
+	        return bs;
+	    }   
+	    
+	public static List<byte[]> readIs( InputStream is ) throws IOException{
+	    return readIs( is, null );
+	}
+    public static List<byte[]> readIs( InputStream is, OutputStream os ) throws IOException{
+        byte[] buf = new byte[1024]; // 32k buffer
+        List<byte[]> value = new ArrayList<byte[]>();
+        
+        int nRead = 0, count = 0;
+        while ((nRead = is.read(buf)) != -1) {
+            count += nRead;
+            if(nRead>0&&os!=null){
+                os.write(buf, 0, nRead);
+            }
+            if (nRead == 1024) {
+                value.add(buf.clone());
+            } else {
+                value.add(subBytes(buf, 0, nRead));
+            }
+        }
+        
+        if(count == 0) return null;
+        return value;
+    }
 	public static BaeCache getBaeCache(){
 		//cacheId为资源id，memcacheAddr为cache的服务地址和端口（例如，cache.duapp.com:10240）, user为ak, password为sk
 		String cacheId ="vuADzfnWuiBWnrlGzSFD";

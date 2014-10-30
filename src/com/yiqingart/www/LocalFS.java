@@ -31,8 +31,10 @@ import com.mongodb.ServerAddress;
 public class LocalFS {
     static private Logger logger = Logger.getLogger(LocalFS.class);
     static private ExecutorService executor = Executors.newFixedThreadPool(15);
-    //static private MongoClient  mongoClient = null;
     
+    public enum TYPE_CACHE {PIC, VIDEO, NOCAHCE};
+    public enum TYPE_GET {MEM_LOCAL, MEM_REMOTE, MEM_LOCAL_REMOTE, LOCAL_REMOTE};
+    public enum TYPE_SAVE {MEM_LOCAL, MEM_REMOTE, MEM_LOCAL_REMOTE};
     private static MongoClient getMongoClient()
     {
         try {
@@ -56,7 +58,39 @@ public class LocalFS {
         for (int i=begin; i<begin+count; i++) bs[i-begin] = src[i];
         return bs;
     }
-    public static Boolean save_file(String collectionName, String filename, InputStream is, Map<String, String> parameters, Boolean toNetDisk )
+    private static Boolean cache_set(TYPE_CACHE cacheType, String key, List<byte[]> value)
+    {
+        FileCache filecache = FileCache.getInstance();
+        switch(cacheType){
+            case PIC:                
+                filecache.setPic(key, value, 600000l);
+                break;
+            case VIDEO:
+                filecache.setVideo(key, value, 60000l);
+                break;
+            case NOCAHCE:
+                break;
+             default:
+                logger.log(Level.FATAL, "cache_set type "+cacheType+ " error");
+                return false; 
+        }
+        return true;
+    }
+    private static List<byte[]> cache_get(TYPE_CACHE cacheType,String key) {
+        FileCache filecache = FileCache.getInstance();
+        switch(cacheType){
+            case PIC:                
+                return filecache.getPic(key);
+            case VIDEO:
+                return filecache.getVideo(key);
+            case NOCAHCE:
+                break;
+             default:
+                logger.log(Level.FATAL, "cache_set type "+cacheType+ " error");                
+        }
+        return null; 
+    }
+    public static Boolean save_file(String collectionName, String filename, TYPE_CACHE cacheType, InputStream is, Map<String, String> parameters, TYPE_SAVE save_type )
     {
         MongoClient mc = null;
         try {
@@ -91,8 +125,7 @@ public class LocalFS {
                 return false;
             }
             
-            FileCache filecache = FileCache.getInstance();
-            filecache.setVideo(filename, value, 60000l);
+            cache_set(cacheType, filename, value);
             
             mc = getMongoClient();
         
@@ -115,9 +148,9 @@ public class LocalFS {
             }   
             //将新建立的document保存到collection中去
             collection.insert(document);
-            if(toNetDisk)
+            if(save_type != TYPE_SAVE.MEM_LOCAL)
             {
-                Runnable worker = new UploadThread(filename, filename);
+                Runnable worker = new UploadThread(filename, filename, save_type == TYPE_SAVE.MEM_REMOTE?true:false);
                 executor.execute(worker);
             }
             return true;
@@ -133,7 +166,75 @@ public class LocalFS {
         }
         
     }
-    public static Boolean get_file_from_netdisk(String filename, OutputStream os) throws IOException
+    public static Boolean save_file(String collectionName, String filename, TYPE_CACHE cacheType, List<byte[]> value, Map<String, String> parameters, TYPE_SAVE save_type)
+    {
+        MongoClient mc = null;
+        try {
+            File file = new File("/home/bae" + filename); 
+            File parent = file.getParentFile(); 
+            if(parent!=null&&!parent.exists()){ 
+                parent.mkdirs(); 
+            } 
+            FileOutputStream os = new FileOutputStream(file); 
+            
+            int count = 0;
+            for (int i = 0; i < value.size(); i++) {
+                byte data[] = value.get(i);
+                count += data.length;
+                if(data.length > 0) os.write(data, 0, data.length);
+            }
+            
+            os.close();
+            
+            if(count == 0)
+            {
+                logger.log(Level.WARN, "save file "+filename+" for netdisk null");
+                file.delete();
+                return false;
+            }
+            
+            cache_set(cacheType, filename, value);
+            
+            mc = getMongoClient();
+        
+            DB mongoDB = mc.getDB(Common.BAE_MONGODB_DB);
+            mongoDB.authenticate(Common.BAE_API_KEY, Common.BAE_SECRET_KEY.toCharArray());
+            
+            DBCollection collection = mongoDB.getCollection(collectionName);
+            
+            BasicDBObject document = new BasicDBObject();
+            document.put("filename", filename);
+            
+            collection.remove(document);
+            
+            if (parameters != null) {
+                for (Entry<String, String> entry : parameters.entrySet()) {
+                    String key = entry.getKey();
+                    String paramValue = entry.getValue();
+                    document.put(key, paramValue);
+                }
+            }   
+            //将新建立的document保存到collection中去
+            collection.insert(document);
+            if(save_type != TYPE_SAVE.MEM_LOCAL)
+            {
+                Runnable worker = new UploadThread(filename, filename, save_type == TYPE_SAVE.MEM_REMOTE?true:false);
+                executor.execute(worker);
+            }
+            return true;
+         }
+        catch (Exception e) {
+            logger.log(Level.FATAL, "save_file error:", e);
+            return false;
+        }
+        finally{
+            if(mc != null){
+                mc.close();
+            }
+        }
+        
+    }
+    public static Boolean get_file_from_netdisk(String filename, OutputStream os, TYPE_CACHE cacheType) throws IOException
     {
         InputStream is = null;
         try {
@@ -152,12 +253,19 @@ public class LocalFS {
                     
             is = connection.getInputStream();
             byte[] buf = new byte[1024]; // 32k buffer
+            List<byte[]> value = new ArrayList<byte[]>();
             
             int nRead = 0, count = 0;
-            while( (nRead=is.read(buf)) != -1 ) {
-                count += nRead;        
-                os.write(buf, 0, nRead);
+            while ((nRead = is.read(buf)) != -1) {
+                count += nRead;
+                os.write(buf, 0, nRead);   
+                if (nRead == 1024) {
+                    value.add(buf.clone());
+                } else {
+                    value.add(subBytes(buf, 0, nRead));
+                }
             }
+            
             if(0==count)
             {
                 logger.log(Level.WARN, "get file "+filename+" from netdisk null");
@@ -165,6 +273,7 @@ public class LocalFS {
                 return false;
             }
             
+            cache_set(cacheType, filename, value);
             is.close();
             return true;
         } catch (Exception e) {
@@ -178,15 +287,14 @@ public class LocalFS {
             }                
         }
     }
-    public static Boolean get_file(String filename, OutputStream os, Boolean fromNetDisk, Boolean cache ) throws IOException
+    public static Boolean get_file(String filename, TYPE_CACHE cacheType, OutputStream os, TYPE_GET get_type ) throws IOException
     {
         FileOutputStream localos = null;
         FileInputStream  is = null;
         try {
-            FileCache filecache = FileCache.getInstance();
             List<byte[]> value = null;
             
-            value = (List<byte[]>) filecache.getVideo(filename);
+            value = (List<byte[]>) cache_get(cacheType, filename);
             
             if(value != null)
             {
@@ -199,10 +307,14 @@ public class LocalFS {
             File file = new File("/home/bae" + filename); 
             if(file!=null&&!file.exists()){ 
                 //本地没有,从网盘下载
-                if(!cache)//不缓存
+                if(get_type == TYPE_GET.MEM_LOCAL )//仅本地
+                {
+                    return false;
+                }
+                if(get_type == TYPE_GET.MEM_REMOTE)//内存和本地
                 {
                     // TODO 如果缓存时间未到也应该缓存
-                    return get_file_from_netdisk(filename, os);
+                    return get_file_from_netdisk(filename, os, cacheType);
                 }
                 
                 //需要缓存
@@ -212,7 +324,7 @@ public class LocalFS {
                 } 
                 localos = new FileOutputStream(file); 
                 
-                if(!get_file_from_netdisk(filename, localos ))
+                if(!get_file_from_netdisk(filename, localos, (get_type == TYPE_GET.LOCAL_REMOTE)?TYPE_CACHE.NOCAHCE:cacheType ))
                 {
                     return false;
                 } 
